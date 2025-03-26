@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, User, Tag as TagIcon, Search as SearchIcon } from "lucide-react";
+import { Menu, User, Tag as TagIcon, Search as SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
 import SearchBar from "@/components/SearchBar";
@@ -9,6 +9,12 @@ import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const HomePage: React.FC = () => {
   const { contacts, findContactsByTag } = useContacts();
@@ -32,19 +38,38 @@ const HomePage: React.FC = () => {
     navigate("/add-contact");
   };
 
+  const handleSearchContact = () => {
+    // This is already the search page, so we'll just focus the search input
+    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header 
-        title="Tagify Contacts" 
+        title="Piston" 
         rightElement={
-          <Button
-            size="icon"
-            onClick={handleAddContact}
-            className="rounded-full h-10 w-10 shadow-sm"
-            aria-label="Add contact"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                className="rounded-full h-10 w-10 shadow-sm"
+                aria-label="Menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover border border-border">
+              <DropdownMenuItem onClick={handleAddContact}>
+                New Contact
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSearchContact}>
+                Search Contact
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
 
@@ -77,7 +102,7 @@ const HomePage: React.FC = () => {
                 description={`No contacts with the service "${searchQuery}" were found.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
-                    <Plus className="h-4 w-4" />
+                    <SearchIcon className="h-4 w-4" />
                     Add a new contact
                   </Button>
                 }
@@ -98,7 +123,7 @@ const HomePage: React.FC = () => {
             description="Add your first contact to get started"
             action={
               <Button onClick={handleAddContact} className="gap-2">
-                <Plus className="h-4 w-4" />
+                <SearchIcon className="h-4 w-4" />
                 Add a contact
               </Button>
             }
