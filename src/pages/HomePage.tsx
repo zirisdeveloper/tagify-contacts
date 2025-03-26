@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, User, Tag as TagIcon, Search as SearchIcon } from "lucide-react";
+import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
 import SearchBar from "@/components/SearchBar";
@@ -9,17 +9,20 @@ import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 const HomePage: React.FC = () => {
-  const { contacts, findContactsByTag } = useContacts();
+  const { contacts, findContactsByTag, addContact } = useContacts();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -46,8 +49,112 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const handleExportContacts = () => {
+    if (contacts.length === 0) {
+      toast.error("No contacts to export");
+      return;
+    }
+
+    // Create a data object to export
+    const dataToExport = {
+      contacts: contacts,
+      exportDate: new Date().toISOString()
+    };
+
+    // Convert the data to a JSON string
+    const jsonString = JSON.stringify(dataToExport, null, 2);
+    
+    // Create a blob with the data
+    const blob = new Blob([jsonString], { type: "application/json" });
+    
+    // Create a URL for the blob
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary anchor element to trigger the download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `piston-contacts-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    toast.success(`${contacts.length} contacts exported successfully`);
+  };
+
+  const handleImportClick = () => {
+    // Trigger the hidden file input
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importedData = JSON.parse(content);
+        
+        if (!importedData || !importedData.contacts || !Array.isArray(importedData.contacts)) {
+          throw new Error("Invalid file format");
+        }
+        
+        // Check if contacts have the required structure
+        const validContacts = importedData.contacts.filter((contact: any) => 
+          contact && typeof contact.name === "string" && Array.isArray(contact.tags)
+        );
+        
+        if (validContacts.length === 0) {
+          throw new Error("No valid contacts found in the file");
+        }
+        
+        // Import each valid contact
+        let importedCount = 0;
+        validContacts.forEach((contact: Omit<Contact, "id">) => {
+          try {
+            addContact(contact);
+            importedCount++;
+          } catch (error) {
+            console.error("Error importing contact:", error);
+          }
+        });
+        
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        
+        toast.success(`${importedCount} contacts imported successfully`);
+        
+      } catch (error) {
+        console.error("Import error:", error);
+        toast.error(`Import failed: ${error instanceof Error ? error.message : "Invalid file format"}`);
+        
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".json"
+        onChange={handleFileChange}
+        className="hidden"
+      />
       <Header 
         title="Piston" 
         rightElement={
@@ -67,6 +174,15 @@ const HomePage: React.FC = () => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSearchContact}>
                 Search Contact
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleExportContacts}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export Contacts
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleImportClick}>
+                <Import className="h-4 w-4 mr-2" />
+                Import Contacts
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
