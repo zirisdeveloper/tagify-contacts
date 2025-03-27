@@ -21,7 +21,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [query, setQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
