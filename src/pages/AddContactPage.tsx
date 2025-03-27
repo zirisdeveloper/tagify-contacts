@@ -37,6 +37,7 @@ const AddContactPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredContacts, setFilteredContacts] = useState(contacts);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [tagsError, setTagsError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const form = useForm<FormData>({
@@ -62,6 +63,13 @@ const AddContactPage: React.FC = () => {
     }
   }, [searchQuery, contacts]);
 
+  // Clear tags error when tags are added
+  useEffect(() => {
+    if (selectedTags.length > 0 && tagsError) {
+      setTagsError(null);
+    }
+  }, [selectedTags, tagsError]);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -69,6 +77,10 @@ const AddContactPage: React.FC = () => {
   const handleAddTag = (tagName: string) => {
     if (!selectedTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())) {
       setSelectedTags([...selectedTags, { id: crypto.randomUUID(), name: tagName }]);
+      // Clear any tag error when a tag is added
+      if (tagsError) {
+        setTagsError(null);
+      }
     } else {
       toast.info(`Tag "${tagName}" already added`);
     }
@@ -76,11 +88,16 @@ const AddContactPage: React.FC = () => {
 
   const handleRemoveTag = (tagId: string) => {
     setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
+    // Set error if removing the last tag
+    if (selectedTags.length <= 1) {
+      setTagsError("At least one tag is required");
+    }
   };
 
   const onSubmit = (data: FormData) => {
+    // Validate tags before submission
     if (selectedTags.length === 0) {
-      toast.error("Please add at least one tag");
+      setTagsError("At least one tag is required");
       return;
     }
 
@@ -185,9 +202,9 @@ const AddContactPage: React.FC = () => {
                   onRemoveTag={handleRemoveTag}
                   placeholder="Add service or tag..."
                 />
-                {selectedTags.length === 0 && (
+                {tagsError && (
                   <p className="text-sm text-destructive">
-                    At least one tag is required
+                    {tagsError}
                   </p>
                 )}
               </div>
