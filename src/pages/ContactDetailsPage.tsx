@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Edit, Trash2, Plus, User, Phone } from "lucide-react";
@@ -9,6 +8,8 @@ import TagPill from "@/components/TagPill";
 import TagInput from "@/components/TagInput";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
+import { generateId } from "@/utils/idGenerator";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,10 +34,17 @@ import { Label } from "@/components/ui/label";
 
 const ContactDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [tagsError, setTagsError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { contacts, updateContact, deleteContact, addTagToContact, removeTagFromContact } = useContacts();
+  const {
+    contacts,
+    updateContact,
+    deleteContact,
+    addTagToContact,
+    removeTagFromContact,
+  } = useContacts();
   const contact = contacts.find((c) => c.id === id);
-  
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [editedFamilyName, setEditedFamilyName] = useState("");
@@ -85,11 +93,24 @@ const ContactDetailsPage: React.FC = () => {
     setNewTags([]);
     setIsAddTagOpen(true);
   };
-
+  /*
   const handleAddTag = (tagName: string) => {
     if (!newTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase()) &&
         !contact.tags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())) {
       setNewTags([...newTags, { id: crypto.randomUUID(), name: tagName }]);
+    }
+  };*/
+
+  const handleAddTag = (tagName: string) => {
+    if (
+      !newTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())
+    ) {
+      setNewTags([...newTags, { id: generateId(), name: tagName }]);
+      if (tagsError) {
+        setTagsError(null);
+      }
+    } else {
+      toast.info(`Tag "${tagName}" already added`);
     }
   };
 
@@ -103,7 +124,7 @@ const ContactDetailsPage: React.FC = () => {
     });
     setIsAddTagOpen(false);
   };
-  
+
   const handleDeleteContact = () => {
     deleteContact(contact.id);
     navigate("/");
@@ -111,9 +132,9 @@ const ContactDetailsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header 
-        title="Contact Details" 
-        showBackButton 
+      <Header
+        title="Contact Details"
+        showBackButton
         rightElement={
           <div className="flex gap-2">
             <Button
@@ -125,7 +146,7 @@ const ContactDetailsPage: React.FC = () => {
             >
               <Edit className="h-5 w-5" />
             </Button>
-            
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -141,12 +162,16 @@ const ContactDetailsPage: React.FC = () => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete contact</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this contact? This action cannot be undone.
+                    Are you sure you want to delete this contact? This action
+                    cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteContact} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  <AlertDialogAction
+                    onClick={handleDeleteContact}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -168,7 +193,7 @@ const ContactDetailsPage: React.FC = () => {
               </h2>
               {contact.phoneNumber && (
                 <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                  <Phone className="h-3.5 w-3.5" /> 
+                  <Phone className="h-3.5 w-3.5" />
                   <span>{contact.phoneNumber}</span>
                 </div>
               )}
@@ -178,23 +203,23 @@ const ContactDetailsPage: React.FC = () => {
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-medium">Tags / Services</h3>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-1 h-8" 
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 h-8"
                 onClick={handleOpenAddTag}
               >
                 <Plus className="h-3.5 w-3.5" /> Add
               </Button>
             </div>
-            
+
             {contact.tags.length > 0 ? (
               <div className="flex flex-wrap gap-2 mt-3">
                 {contact.tags.map((tag) => (
-                  <TagPill 
-                    key={tag.id} 
-                    tag={tag} 
-                    onRemove={() => removeTagFromContact(contact.id, tag.id)} 
+                  <TagPill
+                    key={tag.id}
+                    tag={tag}
+                    onRemove={() => removeTagFromContact(contact.id, tag.id)}
                   />
                 ))}
               </div>
@@ -213,7 +238,7 @@ const ContactDetailsPage: React.FC = () => {
               Make changes to your contact here.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
@@ -227,7 +252,7 @@ const ContactDetailsPage: React.FC = () => {
                 <p className="text-sm text-destructive">Name is required</p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="familyName">Family Name</Label>
               <Input
@@ -237,7 +262,7 @@ const ContactDetailsPage: React.FC = () => {
                 placeholder="Enter family name"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
@@ -249,7 +274,7 @@ const ContactDetailsPage: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>
               Cancel
@@ -269,7 +294,7 @@ const ContactDetailsPage: React.FC = () => {
               Add new tags or services for this contact.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-2">
             <TagInput
               tags={newTags}
@@ -278,15 +303,12 @@ const ContactDetailsPage: React.FC = () => {
               placeholder="Type and press Enter to add..."
             />
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddTagOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSaveNewTags} 
-              disabled={newTags.length === 0}
-            >
+            <Button onClick={handleSaveNewTags} disabled={newTags.length === 0}>
               Add Tags
             </Button>
           </DialogFooter>

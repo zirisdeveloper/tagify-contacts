@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -99,7 +98,7 @@ const AddContactPage: React.FC = () => {
       setTagsError("At least one tag is required");
       return;
     }
-    
+
     addContact({
       name: data.name,
       familyName: data.familyName,
@@ -143,7 +142,7 @@ const AddContactPage: React.FC = () => {
 
       <div className="p-4 pt-2">
         <div className="rounded-xl bg-white shadow-sm border border-border/40 p-4">
-          <h2 className="text-lg font-medium mb-4">New Contact !!!</h2>
+          <h2 className="text-lg font-medium mb-4">New Contact</h2>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
