@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Contact, Tag } from "../types";
 import { toast } from "sonner";
+import { generateId } from "@/utils/idGenerator";
 
 interface ContactContextType {
   contacts: Contact[];
@@ -23,7 +23,6 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
 
-  // Load data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
@@ -37,7 +36,6 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(localStorageKey, JSON.stringify({ contacts, tags }));
   }, [contacts, tags]);
@@ -45,12 +43,11 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addContact = (contact: Omit<Contact, "id">) => {
     const newContact = {
       ...contact,
-      id: crypto.randomUUID(),
+      id: generateId(),
     };
     
     setContacts((prev) => [...prev, newContact]);
     
-    // Add any new tags to the global tag list
     const newTags = contact.tags.filter(
       (tag) => !tags.some((t) => t.name.toLowerCase() === tag.name.toLowerCase())
     );
@@ -69,14 +66,13 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
       )
     );
 
-    // Update global tag list if needed
     if (updatedFields.tags) {
       const allContactTags = contacts.flatMap((contact) => contact.tags);
       const uniqueTags = Array.from(
         new Set([...allContactTags, ...updatedFields.tags].map((tag) => tag.name))
       ).map((name) => {
         const existingTag = tags.find((t) => t.name === name);
-        return existingTag || { id: crypto.randomUUID(), name };
+        return existingTag || { id: generateId(), name };
       });
       
       setTags(uniqueTags);
@@ -91,16 +87,13 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const addTagToContact = (contactId: string, tag: Omit<Tag, "id">) => {
-    // Check if tag already exists in global tags
     let tagToAdd = tags.find((t) => t.name.toLowerCase() === tag.name.toLowerCase());
     
-    // If not, create a new tag
     if (!tagToAdd) {
-      tagToAdd = { id: crypto.randomUUID(), name: tag.name };
+      tagToAdd = { id: generateId(), name: tag.name };
       setTags((prev) => [...prev, tagToAdd as Tag]);
     }
     
-    // Add tag to contact if it doesn't already have it
     setContacts((prev) =>
       prev.map((contact) => {
         if (contact.id === contactId) {

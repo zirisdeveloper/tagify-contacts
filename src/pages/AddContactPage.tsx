@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -13,6 +12,7 @@ import ContactCard from "@/components/ContactCard";
 import TagInput from "@/components/TagInput";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
+import { generateId } from "@/utils/idGenerator";
 import {
   Form,
   FormControl,
@@ -63,7 +63,6 @@ const AddContactPage: React.FC = () => {
     }
   }, [searchQuery, contacts]);
 
-  // Clear tags error when tags are added
   useEffect(() => {
     if (selectedTags.length > 0 && tagsError) {
       setTagsError(null);
@@ -76,8 +75,7 @@ const AddContactPage: React.FC = () => {
 
   const handleAddTag = (tagName: string) => {
     if (!selectedTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())) {
-      setSelectedTags([...selectedTags, { id: crypto.randomUUID(), name: tagName }]);
-      // Clear any tag error when a tag is added
+      setSelectedTags([...selectedTags, { id: generateId(), name: tagName }]);
       if (tagsError) {
         setTagsError(null);
       }
@@ -91,7 +89,6 @@ const AddContactPage: React.FC = () => {
   };
 
   const onSubmit = (data: FormData) => {
-    // Make tags optional for testing
     addContact({
       name: data.name,
       familyName: data.familyName,
