@@ -88,19 +88,10 @@ const AddContactPage: React.FC = () => {
 
   const handleRemoveTag = (tagId: string) => {
     setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
-    // Set error if removing the last tag
-    if (selectedTags.length <= 1) {
-      setTagsError("At least one tag is required");
-    }
   };
 
   const onSubmit = (data: FormData) => {
-    // Validate tags before submission
-    if (selectedTags.length === 0) {
-      setTagsError("At least one tag is required");
-      return;
-    }
-
+    // Make tags optional for testing
     addContact({
       name: data.name,
       familyName: data.familyName,
@@ -195,7 +186,7 @@ const AddContactPage: React.FC = () => {
               />
 
               <div className="space-y-2">
-                <FormLabel>Tags / Services *</FormLabel>
+                <FormLabel>Tags / Services</FormLabel>
                 <TagInput
                   tags={selectedTags}
                   onAddTag={handleAddTag}

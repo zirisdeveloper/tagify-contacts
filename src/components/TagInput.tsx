@@ -60,7 +60,10 @@ const TagInput: React.FC<TagInputProps> = ({
     onRemoveTag(tagId);
   };
 
-  const handleAddTag = () => {
+  const handleAddTag = (e: React.MouseEvent) => {
+    e.stopPropagation();  // Stop event propagation to prevent container click
+    e.preventDefault();   // Prevent form submission
+    
     if (inputValue.trim()) {
       onAddTag(inputValue.trim());
       setInputValue("");
