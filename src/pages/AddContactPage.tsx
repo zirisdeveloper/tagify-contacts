@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -93,6 +94,12 @@ const AddContactPage: React.FC = () => {
   };
 
   const onSubmit = (data: FormData) => {
+    // Validate that at least one tag is added
+    if (selectedTags.length === 0) {
+      setTagsError("At least one tag is required");
+      return;
+    }
+    
     addContact({
       name: data.name,
       familyName: data.familyName,
@@ -187,7 +194,7 @@ const AddContactPage: React.FC = () => {
               />
 
               <div className="space-y-2">
-                <FormLabel>Tags / Services</FormLabel>
+                <FormLabel>Tags / Services *</FormLabel>
                 <TagInput
                   tags={selectedTags}
                   onAddTag={handleAddTag}
