@@ -74,7 +74,11 @@ const AddContactPage: React.FC = () => {
   };
 
   const handleAddTag = (tagName: string) => {
-    if (!selectedTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())) {
+    if (
+      !selectedTags.some(
+        (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
+      )
+    ) {
       setSelectedTags([...selectedTags, { id: generateId(), name: tagName }]);
       if (tagsError) {
         setTagsError(null);
@@ -132,8 +136,8 @@ const AddContactPage: React.FC = () => {
 
       <div className="p-4 pt-2">
         <div className="rounded-xl bg-white shadow-sm border border-border/40 p-4">
-          <h2 className="text-lg font-medium mb-4">New Contact</h2>
-          
+          <h2 className="text-lg font-medium mb-4">New Contact !!!</h2>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -171,9 +175,9 @@ const AddContactPage: React.FC = () => {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Enter phone number" 
+                      <Input
+                        {...field}
+                        placeholder="Enter phone number"
                         type="tel"
                       />
                     </FormControl>
@@ -191,16 +195,11 @@ const AddContactPage: React.FC = () => {
                   placeholder="Add service or tag..."
                 />
                 {tagsError && (
-                  <p className="text-sm text-destructive">
-                    {tagsError}
-                  </p>
+                  <p className="text-sm text-destructive">{tagsError}</p>
                 )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full gap-2"
-              >
+              <Button type="submit" className="w-full gap-2">
                 <Plus className="h-4 w-4" />
                 Create Contact
               </Button>
