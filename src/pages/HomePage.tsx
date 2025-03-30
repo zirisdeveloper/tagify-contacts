@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText } from "lucide-react";
+import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
 import SearchBar from "@/components/SearchBar";
@@ -53,6 +52,25 @@ const HomePage: React.FC = () => {
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.focus();
+    }
+  };
+
+  const handleSearchService = () => {
+    // Also focuses the search input as it's on the home page
+    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+      // Optional: You could set a placeholder or hint that service search is active
+      toast.info("Type a service name to find contacts");
+    }
+  };
+
+  const handleHome = () => {
+    // We're already on the home page, just reset the search
+    setSearchQuery("");
+    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.value = "";
     }
   };
 
@@ -165,34 +183,49 @@ const HomePage: React.FC = () => {
       <Header 
         title="Piston" 
         rightElement={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                className="rounded-full h-10 w-10 shadow-sm"
-                aria-label="Menu"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-popover border border-border">
-              <DropdownMenuItem onClick={handleAddContact}>
-                New Contact
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSearchContact}>
-                Search Contact
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleExportContacts}>
-                <FileText className="h-4 w-4 mr-2" />
-                Export Contacts
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleImportClick}>
-                <Import className="h-4 w-4 mr-2" />
-                Import Contacts
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full h-10 w-10"
+              onClick={handleHome}
+              aria-label="Home"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  className="rounded-full h-10 w-10 shadow-sm"
+                  aria-label="Menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-popover border border-border">
+                <DropdownMenuItem onClick={handleAddContact}>
+                  New Contact
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSearchContact}>
+                  Search Contact
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSearchService}>
+                  Search Service
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleExportContacts}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export Contacts
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportClick}>
+                  <Import className="h-4 w-4 mr-2" />
+                  Import Contacts
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         }
       />
 
