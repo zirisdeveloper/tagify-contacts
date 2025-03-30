@@ -169,7 +169,7 @@ const HomePage: React.FC = () => {
         centerTitle={true}
         leftElement={
           <Button
-            variant="ghost"
+            variant="default"
             size="icon"
             className="rounded-full h-10 w-10 shadow-sm"
             onClick={handleHome}
