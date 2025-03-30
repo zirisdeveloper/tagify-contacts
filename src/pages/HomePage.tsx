@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
@@ -21,22 +22,32 @@ const HomePage: React.FC = () => {
   const { contacts, findContactsByTag, addContact } = useContacts();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchingService, setIsSearchingService] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
   
   useEffect(() => {
     if (searchQuery.trim()) {
-      setFilteredContacts(
-        contacts.filter((contact) =>
-          `${contact.name} ${contact.familyName || ""}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
-      );
+      if (isSearchingService) {
+        // Search by tag/service
+        setFilteredContacts(findContactsByTag(searchQuery));
+      } else {
+        // Search by name
+        setFilteredContacts(
+          contacts.filter((contact) =>
+            `${contact.name} ${contact.familyName || ""}`
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          )
+        );
+      }
     } else {
       setFilteredContacts([]);
+      setIsSearchingService(false);
     }
-  }, [searchQuery, contacts]);
+  }, [searchQuery, contacts, isSearchingService, findContactsByTag]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -47,22 +58,26 @@ const HomePage: React.FC = () => {
   };
 
   const handleSearchContact = () => {
+    setIsSearchingService(false);
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.focus();
+      toast.info("Type a name to find contacts");
     }
   };
 
   const handleSearchService = () => {
+    setIsSearchingService(true);
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.focus();
-      toast.info("Type a service name to find contacts");
+      toast.info("Type a service or tag name to find contacts");
     }
   };
 
   const handleHome = () => {
     setSearchQuery("");
+    setIsSearchingService(false);
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.value = "";
@@ -168,20 +183,23 @@ const HomePage: React.FC = () => {
         title="Piston" 
         centerTitle={true}
         leftElement={
-          <Button
-            variant="default"
-            size="icon"
-            className="rounded-full h-10 w-10 shadow-sm"
-            onClick={handleHome}
-            aria-label="Home"
-          >
-            <Home className="h-5 w-5" />
-          </Button>
+          !isHomePage && (
+            <Button
+              variant="default"
+              size="icon"
+              className="rounded-full h-10 w-10 shadow-sm"
+              onClick={handleHome}
+              aria-label="Home"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+          )
         }
         rightElement={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                variant="default"
                 size="icon"
                 className="rounded-full h-10 w-10 shadow-sm"
                 aria-label="Menu"
@@ -215,7 +233,7 @@ const HomePage: React.FC = () => {
 
       <div className="px-4 py-3">
         <SearchBar 
-          placeholder="Search contacts..."
+          placeholder={isSearchingService ? "Search services or tags..." : "Search contacts..."}
           onSearch={handleSearch}
           autoFocus
         />
@@ -228,6 +246,7 @@ const HomePage: React.FC = () => {
               <div className="space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground">
                   {filteredContacts.length} {filteredContacts.length === 1 ? 'contact' : 'contacts'} found for "{searchQuery}"
+                  {isSearchingService ? " (searching services/tags)" : ""}
                 </p>
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
@@ -239,7 +258,10 @@ const HomePage: React.FC = () => {
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
                 title="No contacts found"
-                description={`No contacts with name "${searchQuery}" were found.`}
+                description={isSearchingService 
+                  ? `No contacts with service or tag "${searchQuery}" were found.`
+                  : `No contacts with name "${searchQuery}" were found.`
+                }
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
                     <SearchIcon className="h-4 w-4" />
@@ -253,7 +275,10 @@ const HomePage: React.FC = () => {
           <EmptyState
             icon={<User className="h-12 w-12 opacity-20" />}
             title="Search for a contact"
-            description="Type a contact name to find contacts"
+            description={isSearchingService 
+              ? "Type a service or tag name to find contacts" 
+              : "Type a contact name to find contacts"
+            }
             className="mt-12"
           />
         ) : (
