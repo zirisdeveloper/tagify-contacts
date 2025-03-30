@@ -27,11 +27,18 @@ const HomePage: React.FC = () => {
   
   useEffect(() => {
     if (searchQuery.trim()) {
-      setFilteredContacts(findContactsByTag(searchQuery));
+      // Search by contact name or family name instead of tag
+      setFilteredContacts(
+        contacts.filter((contact) =>
+          `${contact.name} ${contact.familyName || ""}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      );
     } else {
       setFilteredContacts([]);
     }
-  }, [searchQuery, findContactsByTag, contacts]);
+  }, [searchQuery, contacts]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -191,7 +198,7 @@ const HomePage: React.FC = () => {
 
       <div className="px-4 py-3">
         <SearchBar 
-          placeholder="Search by tag or service..."
+          placeholder="Search contacts..."
           onSearch={handleSearch}
           autoFocus
         />
@@ -215,7 +222,7 @@ const HomePage: React.FC = () => {
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
                 title="No contacts found"
-                description={`No contacts with the service "${searchQuery}" were found.`}
+                description={`No contacts with name "${searchQuery}" were found.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
                     <SearchIcon className="h-4 w-4" />
@@ -227,9 +234,9 @@ const HomePage: React.FC = () => {
           </>
         ) : contacts.length > 0 ? (
           <EmptyState
-            icon={<TagIcon className="h-12 w-12 opacity-20" />}
-            title="Search for a service"
-            description="Type a service or tag name to find contacts"
+            icon={<User className="h-12 w-12 opacity-20" />}
+            title="Search for a contact"
+            description="Type a contact name to find contacts"
             className="mt-12"
           />
         ) : (
