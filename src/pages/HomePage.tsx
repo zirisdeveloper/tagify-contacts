@@ -26,7 +26,6 @@ const HomePage: React.FC = () => {
   
   useEffect(() => {
     if (searchQuery.trim()) {
-      // Search by contact name or family name instead of tag
       setFilteredContacts(
         contacts.filter((contact) =>
           `${contact.name} ${contact.familyName || ""}`
@@ -48,7 +47,6 @@ const HomePage: React.FC = () => {
   };
 
   const handleSearchContact = () => {
-    // This is already the search page, so we'll just focus the search input
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.focus();
@@ -56,17 +54,14 @@ const HomePage: React.FC = () => {
   };
 
   const handleSearchService = () => {
-    // Also focuses the search input as it's on the home page
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.focus();
-      // Optional: You could set a placeholder or hint that service search is active
       toast.info("Type a service name to find contacts");
     }
   };
 
   const handleHome = () => {
-    // We're already on the home page, just reset the search
     setSearchQuery("");
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
@@ -80,29 +75,23 @@ const HomePage: React.FC = () => {
       return;
     }
 
-    // Create a data object to export
     const dataToExport = {
       contacts: contacts,
       exportDate: new Date().toISOString()
     };
 
-    // Convert the data to a JSON string
     const jsonString = JSON.stringify(dataToExport, null, 2);
     
-    // Create a blob with the data
     const blob = new Blob([jsonString], { type: "application/json" });
     
-    // Create a URL for the blob
     const url = URL.createObjectURL(blob);
     
-    // Create a temporary anchor element to trigger the download
     const a = document.createElement("a");
     a.href = url;
     a.download = `piston-contacts-${new Date().toISOString().split("T")[0]}.json`;
     document.body.appendChild(a);
     a.click();
     
-    // Clean up
     URL.revokeObjectURL(url);
     document.body.removeChild(a);
     
@@ -110,7 +99,6 @@ const HomePage: React.FC = () => {
   };
 
   const handleImportClick = () => {
-    // Trigger the hidden file input
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -130,7 +118,6 @@ const HomePage: React.FC = () => {
           throw new Error("Invalid file format");
         }
         
-        // Check if contacts have the required structure
         const validContacts = importedData.contacts.filter((contact: any) => 
           contact && typeof contact.name === "string" && Array.isArray(contact.tags)
         );
@@ -139,7 +126,6 @@ const HomePage: React.FC = () => {
           throw new Error("No valid contacts found in the file");
         }
         
-        // Import each valid contact
         let importedCount = 0;
         validContacts.forEach((contact: Omit<Contact, "id">) => {
           try {
@@ -150,7 +136,6 @@ const HomePage: React.FC = () => {
           }
         });
         
-        // Reset the file input
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -161,7 +146,6 @@ const HomePage: React.FC = () => {
         console.error("Import error:", error);
         toast.error(`Import failed: ${error instanceof Error ? error.message : "Invalid file format"}`);
         
-        // Reset the file input
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -182,50 +166,50 @@ const HomePage: React.FC = () => {
       />
       <Header 
         title="Piston" 
+        centerTitle={true}
+        leftElement={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full h-10 w-10 shadow-sm"
+            onClick={handleHome}
+            aria-label="Home"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+        }
         rightElement={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full h-10 w-10"
-              onClick={handleHome}
-              aria-label="Home"
-            >
-              <Home className="h-5 w-5" />
-            </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="icon"
-                  className="rounded-full h-10 w-10 shadow-sm"
-                  aria-label="Menu"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-popover border border-border">
-                <DropdownMenuItem onClick={handleAddContact}>
-                  New Contact
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSearchContact}>
-                  Search Contact
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSearchService}>
-                  Search Service
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleExportContacts}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Export Contacts
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleImportClick}>
-                  <Import className="h-4 w-4 mr-2" />
-                  Import Contacts
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                className="rounded-full h-10 w-10 shadow-sm"
+                aria-label="Menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover border border-border">
+              <DropdownMenuItem onClick={handleAddContact}>
+                New Contact
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSearchContact}>
+                Search Contact
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSearchService}>
+                Search Service
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleExportContacts}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export Contacts
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleImportClick}>
+                <Import className="h-4 w-4 mr-2" />
+                Import Contacts
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
 

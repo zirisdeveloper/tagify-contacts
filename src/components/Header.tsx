@@ -8,15 +8,19 @@ import { cn } from "@/lib/utils";
 interface HeaderProps {
   title: string;
   showBackButton?: boolean;
+  leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
   className?: string;
+  centerTitle?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
   title,
   showBackButton = false,
+  leftElement,
   rightElement,
   className,
+  centerTitle = false,
 }) => {
   const navigate = useNavigate();
 
@@ -37,8 +41,14 @@ const Header: React.FC<HeaderProps> = ({
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="text-xl font-medium">{title}</h1>
+        {leftElement}
       </div>
+      <h1 className={cn(
+        "text-xl font-medium",
+        centerTitle && "absolute left-1/2 transform -translate-x-1/2"
+      )}>
+        {title}
+      </h1>
       {rightElement && <div>{rightElement}</div>}
     </header>
   );
