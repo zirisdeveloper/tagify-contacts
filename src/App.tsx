@@ -8,6 +8,7 @@ import { ContactProvider } from "./context/ContactContext";
 import HomePage from "./pages/HomePage";
 import AddContactPage from "./pages/AddContactPage";
 import ContactDetailsPage from "./pages/ContactDetailsPage";
+import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<HomePage />} />
             <Route path="/add-contact" element={<AddContactPage />} />
             <Route path="/contact/:id" element={<ContactDetailsPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

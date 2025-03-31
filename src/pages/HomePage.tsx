@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
-import SearchBar from "@/components/SearchBar";
+import ServiceSearchBar from "@/components/ServiceSearchBar";
 import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
@@ -22,7 +22,6 @@ const HomePage: React.FC = () => {
   const { contacts, findContactsByTag, addContact } = useContacts();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchingService, setIsSearchingService] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,24 +29,12 @@ const HomePage: React.FC = () => {
   
   useEffect(() => {
     if (searchQuery.trim()) {
-      if (isSearchingService) {
-        // Search by tag/service
-        setFilteredContacts(findContactsByTag(searchQuery));
-      } else {
-        // Search by name
-        setFilteredContacts(
-          contacts.filter((contact) =>
-            `${contact.name} ${contact.familyName || ""}`
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-          )
-        );
-      }
+      // Only search by tag/service in the home page
+      setFilteredContacts(findContactsByTag(searchQuery));
     } else {
       setFilteredContacts([]);
-      setIsSearchingService(false);
     }
-  }, [searchQuery, contacts, isSearchingService, findContactsByTag]);
+  }, [searchQuery, contacts, findContactsByTag]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -58,26 +45,12 @@ const HomePage: React.FC = () => {
   };
 
   const handleSearchContact = () => {
-    setIsSearchingService(false);
-    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus();
-      toast.info("Type a name to find contacts");
-    }
-  };
-
-  const handleSearchService = () => {
-    setIsSearchingService(true);
-    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus();
-      toast.info("Type a service or tag name to find contacts");
-    }
+    navigate("/search");
+    toast.info("Type a name to find contacts");
   };
 
   const handleHome = () => {
     setSearchQuery("");
-    setIsSearchingService(false);
     const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
     if (searchInput) {
       searchInput.value = "";
@@ -214,9 +187,6 @@ const HomePage: React.FC = () => {
               <DropdownMenuItem onClick={handleSearchContact}>
                 Search Contact
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSearchService}>
-                Search Service
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleExportContacts}>
                 <FileText className="h-4 w-4 mr-2" />
@@ -232,8 +202,8 @@ const HomePage: React.FC = () => {
       />
 
       <div className="px-4 py-3">
-        <SearchBar 
-          placeholder={isSearchingService ? "Search services or tags..." : "Search contacts..."}
+        <ServiceSearchBar 
+          placeholder="Search services or tags..."
           onSearch={handleSearch}
           autoFocus
         />
@@ -245,8 +215,7 @@ const HomePage: React.FC = () => {
             {filteredContacts.length > 0 ? (
               <div className="space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground">
-                  {filteredContacts.length} {filteredContacts.length === 1 ? 'contact' : 'contacts'} found for "{searchQuery}"
-                  {isSearchingService ? " (searching services/tags)" : ""}
+                  {filteredContacts.length} {filteredContacts.length === 1 ? 'contact' : 'contacts'} found for "{searchQuery}" (searching services/tags)
                 </p>
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
@@ -258,13 +227,10 @@ const HomePage: React.FC = () => {
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
                 title="No contacts found"
-                description={isSearchingService 
-                  ? `No contacts with service or tag "${searchQuery}" were found.`
-                  : `No contacts with name "${searchQuery}" were found.`
-                }
+                description={`No contacts with service or tag "${searchQuery}" were found.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
-                    <SearchIcon className="h-4 w-4" />
+                    <User className="h-4 w-4" />
                     Add a new contact
                   </Button>
                 }
@@ -273,12 +239,9 @@ const HomePage: React.FC = () => {
           </>
         ) : contacts.length > 0 ? (
           <EmptyState
-            icon={<User className="h-12 w-12 opacity-20" />}
-            title="Search for a contact"
-            description={isSearchingService 
-              ? "Type a service or tag name to find contacts" 
-              : "Type a contact name to find contacts"
-            }
+            icon={<TagIcon className="h-12 w-12 opacity-20" />}
+            title="Search for a service"
+            description="Type a service or tag name to find contacts"
             className="mt-12"
           />
         ) : (
@@ -288,7 +251,7 @@ const HomePage: React.FC = () => {
             description="Add your first contact to get started"
             action={
               <Button onClick={handleAddContact} className="gap-2">
-                <SearchIcon className="h-4 w-4" />
+                <User className="h-4 w-4" />
                 Add a contact
               </Button>
             }
