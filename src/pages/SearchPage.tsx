@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { User, Search as SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
+import { useLanguage } from "@/context/LanguageContext";
 import ContactSearchBar from "@/components/ContactSearchBar";
 import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
@@ -12,6 +13,7 @@ import { Contact } from "@/types";
 
 const SearchPage: React.FC = () => {
   const { contacts } = useContacts();
+  const { t } = useLanguage();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -42,13 +44,13 @@ const SearchPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header 
-        title="Search Contacts" 
+        title={t("searchContacts")} 
         showBackButton={true}
       />
 
       <div className="px-4 py-3">
         <ContactSearchBar 
-          placeholder="Search contacts by name..."
+          placeholder={t("searchContactsByName")}
           onSearch={handleSearch}
           autoFocus
         />
@@ -60,7 +62,9 @@ const SearchPage: React.FC = () => {
             {filteredContacts.length > 0 ? (
               <div className="space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground">
-                  {filteredContacts.length} {filteredContacts.length === 1 ? 'contact' : 'contacts'} found for "{searchQuery}"
+                  {filteredContacts.length} {filteredContacts.length === 1 
+                    ? t("contactFound") 
+                    : t("contactsFound")} "{searchQuery}"
                 </p>
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
@@ -71,12 +75,12 @@ const SearchPage: React.FC = () => {
             ) : (
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
-                title="No contacts found"
-                description={`No contacts with name "${searchQuery}" were found.`}
+                title={t("noContactsFound")}
+                description={`${t("noContactsWithName")} "${searchQuery}" ${t("wereFound")}.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
                     <User className="h-4 w-4" />
-                    Add a new contact
+                    {t("addContact")}
                   </Button>
                 }
               />
@@ -85,8 +89,8 @@ const SearchPage: React.FC = () => {
         ) : (
           <EmptyState
             icon={<User className="h-12 w-12 opacity-20" />}
-            title="Search for a contact"
-            description="Type a contact name to find matches"
+            title={t("searchForContact")}
+            description={t("typeContactName")}
             className="mt-12"
           />
         )}

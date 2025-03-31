@@ -1,9 +1,10 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import LanguageSelector from "./LanguageSelector";
 
 interface HeaderProps {
   title: string;
@@ -23,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({
   centerTitle = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <header className={cn(
@@ -49,7 +51,10 @@ const Header: React.FC<HeaderProps> = ({
       )}>
         {title}
       </h1>
-      {rightElement && <div>{rightElement}</div>}
+      <div className="flex items-center gap-2">
+        <LanguageSelector />
+        {rightElement && <div>{rightElement}</div>}
+      </div>
     </header>
   );
 };
