@@ -2,42 +2,55 @@
 import React from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { FlagTriangleLeft, FlagTriangleRight } from "lucide-react";
+import { Check, Languages } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 const LanguageSelector: React.FC = () => {
   const { language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleLanguageChange = (newLanguage: "en" | "fr") => {
+    setLanguage(newLanguage);
+  };
+
+  const handleEditTranslations = () => {
+    navigate("/translations");
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          {language === "en" ? (
-            <FlagTriangleRight className="h-5 w-5 text-blue-600" />
-          ) : (
-            <FlagTriangleRight className="h-5 w-5 text-blue-900" />
-          )}
+          <Languages className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-background border border-border">
+      <DropdownMenuContent align="end" className="bg-background border border-border w-48">
         <DropdownMenuItem
-          onClick={() => setLanguage("en")}
+          onClick={() => handleLanguageChange("en")}
           className={`flex items-center gap-2 ${language === "en" ? "bg-accent" : ""}`}
         >
-          <FlagTriangleRight className="h-4 w-4 text-blue-600" />
+          <span className="mr-2">🇬🇧</span>
           <span>English</span>
+          {language === "en" && <Check className="h-4 w-4 ml-auto" />}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setLanguage("fr")}
+          onClick={() => handleLanguageChange("fr")}
           className={`flex items-center gap-2 ${language === "fr" ? "bg-accent" : ""}`}
         >
-          <FlagTriangleLeft className="h-4 w-4 text-blue-900" />
+          <span className="mr-2">🇫🇷</span>
           <span>Français</span>
+          {language === "fr" && <Check className="h-4 w-4 ml-auto" />}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleEditTranslations} className="flex items-center gap-2">
+          <span>Modify Translations</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

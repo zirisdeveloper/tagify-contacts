@@ -1,8 +1,8 @@
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 // Define all the translations
-export const translations = {
+export const defaultTranslations = {
   en: {
     // Common
     search: "Search",
@@ -55,6 +55,9 @@ export const translations = {
     // Not Found Page
     pageNotFound: "Page Not Found",
     returnHome: "Return Home",
+    
+    // Translation Editor
+    modifyTranslations: "Modify Translations",
   },
   fr: {
     // Common
@@ -108,29 +111,54 @@ export const translations = {
     // Not Found Page
     pageNotFound: "Page non trouvée",
     returnHome: "Retourner à l'accueil",
+    
+    // Translation Editor
+    modifyTranslations: "Modifier les Traductions",
   }
 };
 
 type Language = "en" | "fr";
-type TranslationKey = keyof typeof translations.en;
+type TranslationKey = keyof typeof defaultTranslations.en;
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
   t: (key: TranslationKey) => string;
+  translations: typeof defaultTranslations;
+  updateTranslations: (newTranslations: typeof defaultTranslations) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Load translations from localStorage or use defaults
+const loadTranslations = () => {
+  const storedTranslations = localStorage.getItem('translations');
+  return storedTranslations ? JSON.parse(storedTranslations) : defaultTranslations;
+};
+
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    const storedLanguage = localStorage.getItem('language');
+    return (storedLanguage as Language) || "en";
+  });
+  
+  const [translations, setTranslations] = useState(loadTranslations());
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  const updateTranslations = (newTranslations: typeof defaultTranslations) => {
+    setTranslations(newTranslations);
+    localStorage.setItem('translations', JSON.stringify(newTranslations));
+  };
 
   const t = (key: TranslationKey): string => {
     return translations[language][key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, translations, updateTranslations }}>
       {children}
     </LanguageContext.Provider>
   );
