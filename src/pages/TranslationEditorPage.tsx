@@ -21,7 +21,7 @@ const TranslationEditorPage: React.FC = () => {
   const handleSaveTranslations = () => {
     updateTranslations(editableTranslations);
     toast({
-      title: "Translations saved",
+      title: t("save") + " " + t("modifyTranslations").toLowerCase(),
       description: "Your translation changes have been saved successfully."
     });
   };

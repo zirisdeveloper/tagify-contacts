@@ -11,13 +11,16 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const LanguageSelector: React.FC = () => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
   const handleLanguageChange = (newLanguage: "en" | "fr") => {
     setLanguage(newLanguage);
+    // Show toast notification about language change
+    toast.success(newLanguage === "en" ? "Language switched to English" : "Langue changée en Français");
   };
 
   const handleEditTranslations = () => {
@@ -50,7 +53,7 @@ const LanguageSelector: React.FC = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleEditTranslations} className="flex items-center gap-2">
-          <span>Modify Translations</span>
+          <span>{t("modifyTranslations")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

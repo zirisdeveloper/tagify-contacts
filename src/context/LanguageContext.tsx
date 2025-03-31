@@ -154,6 +154,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const t = (key: TranslationKey): string => {
+    // Check if the key exists in the current language translations
     return translations[language][key] || key;
   };
 
