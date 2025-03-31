@@ -18,9 +18,11 @@ const LanguageSelector: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLanguageChange = (newLanguage: "en" | "fr") => {
-    setLanguage(newLanguage);
-    // Show toast notification about language change
-    toast.success(newLanguage === "en" ? "Language switched to English" : "Langue changée en Français");
+    if (language !== newLanguage) {
+      setLanguage(newLanguage);
+      // Show toast notification about language change
+      toast.success(newLanguage === "en" ? "Language switched to English" : "Langue changée en Français");
+    }
   };
 
   const handleEditTranslations = () => {

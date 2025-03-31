@@ -144,6 +144,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   
   const [translations, setTranslations] = useState(loadTranslations());
 
+  // Save language to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('language', language);
   }, [language]);
@@ -154,12 +155,23 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const t = (key: TranslationKey): string => {
-    // Check if the key exists in the current language translations
-    return translations[language][key] || key;
+    if (!translations[language] || !translations[language][key]) {
+      console.warn(`Translation missing for key: ${key} in language: ${language}`);
+      return key;
+    }
+    return translations[language][key];
+  };
+
+  const contextValue = {
+    language,
+    setLanguage,
+    t,
+    translations,
+    updateTranslations
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, translations, updateTranslations }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );
