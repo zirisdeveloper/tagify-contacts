@@ -139,7 +139,7 @@ const loadTranslations = () => {
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const storedLanguage = localStorage.getItem('language');
-    return (storedLanguage as Language) || "en";
+    return (storedLanguage as Language) || "fr"; // Changed default from "en" to "fr"
   });
   
   const [translations, setTranslations] = useState(loadTranslations());
