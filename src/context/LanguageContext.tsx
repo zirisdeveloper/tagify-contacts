@@ -132,39 +132,73 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 // Load translations from localStorage or use defaults
 const loadTranslations = () => {
-  const storedTranslations = localStorage.getItem('translations');
-  return storedTranslations ? JSON.parse(storedTranslations) : defaultTranslations;
+  try {
+    const storedTranslations = localStorage.getItem('translations');
+    return storedTranslations ? JSON.parse(storedTranslations) : defaultTranslations;
+  } catch (error) {
+    console.error("Error loading translations from localStorage:", error);
+    return defaultTranslations;
+  }
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Initialize language from localStorage or default to "fr"
   const [language, setLanguage] = useState<Language>(() => {
-    const storedLanguage = localStorage.getItem('language');
-    return (storedLanguage as Language) || "fr"; // Changed default from "en" to "fr"
+    try {
+      const storedLanguage = localStorage.getItem('language');
+      return (storedLanguage as Language) || "fr";
+    } catch (error) {
+      console.error("Error reading language from localStorage:", error);
+      return "fr";
+    }
   });
   
   const [translations, setTranslations] = useState(loadTranslations());
 
+  // Function to update language and save to localStorage
+  const changeLanguage = (newLanguage: Language) => {
+    try {
+      localStorage.setItem('language', newLanguage);
+      setLanguage(newLanguage);
+      // Force a re-render by updating the state
+      console.log(`Language changed to: ${newLanguage}`);
+    } catch (error) {
+      console.error("Error saving language to localStorage:", error);
+    }
+  };
+
   // Save language to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('language', language);
+    try {
+      localStorage.setItem('language', language);
+      console.log(`Language saved to localStorage: ${language}`);
+    } catch (error) {
+      console.error("Error saving language to localStorage:", error);
+    }
   }, [language]);
 
   const updateTranslations = (newTranslations: typeof defaultTranslations) => {
-    setTranslations(newTranslations);
-    localStorage.setItem('translations', JSON.stringify(newTranslations));
+    try {
+      setTranslations(newTranslations);
+      localStorage.setItem('translations', JSON.stringify(newTranslations));
+    } catch (error) {
+      console.error("Error saving translations to localStorage:", error);
+    }
   };
 
   const t = (key: TranslationKey): string => {
     if (!translations[language] || !translations[language][key]) {
       console.warn(`Translation missing for key: ${key} in language: ${language}`);
-      return key;
+      // Fallback to English if translation is missing
+      return translations.en[key] || key;
     }
     return translations[language][key];
   };
 
+  // Create a new context value on each render to ensure subscribers get notified
   const contextValue = {
     language,
-    setLanguage,
+    setLanguage: changeLanguage, // Use the new function that ensures proper state updates
     t,
     translations,
     updateTranslations

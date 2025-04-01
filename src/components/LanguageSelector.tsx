@@ -22,6 +22,11 @@ const LanguageSelector: React.FC = () => {
       setLanguage(newLanguage);
       // Show toast notification about language change
       toast.success(newLanguage === "en" ? "Language switched to English" : "Langue changée en Français");
+      
+      // Force UI update by triggering a small state change somewhere
+      setTimeout(() => {
+        window.dispatchEvent(new Event('storage')); // This triggers a small event that won't affect anything else
+      }, 50);
     }
   };
 
