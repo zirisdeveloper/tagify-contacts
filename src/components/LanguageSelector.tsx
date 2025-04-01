@@ -23,9 +23,9 @@ const LanguageSelector: React.FC = () => {
       // Show toast notification about language change
       toast.success(newLanguage === "en" ? "Language switched to English" : "Langue changée en Français");
       
-      // Force UI update by triggering a small state change somewhere
+      // Force UI update by triggering a re-render
       setTimeout(() => {
-        window.dispatchEvent(new Event('storage')); // This triggers a small event that won't affect anything else
+        window.dispatchEvent(new Event('languageChanged'));
       }, 50);
     }
   };
@@ -37,7 +37,7 @@ const LanguageSelector: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label={t("changeLanguage")}>
           <Languages className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>

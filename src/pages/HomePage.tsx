@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
+import { useLanguage } from "@/context/LanguageContext";
 import ServiceSearchBar from "@/components/ServiceSearchBar";
 import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
@@ -20,12 +21,27 @@ import {
 
 const HomePage: React.FC = () => {
   const { contacts, findContactsByTag, addContact } = useContacts();
+  const { t } = useLanguage();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  
+  // Force re-render when language changes
+  const [, setRenderKey] = useState(0);
+  
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setRenderKey(prev => prev + 1);
+    };
+    
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, []);
   
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -46,7 +62,7 @@ const HomePage: React.FC = () => {
 
   const handleSearchContact = () => {
     navigate("/search");
-    toast.info("Type a name to find contacts");
+    toast.info(t("typeNameToFind"));
   };
 
   const handleHome = () => {
@@ -59,7 +75,7 @@ const HomePage: React.FC = () => {
 
   const handleExportContacts = () => {
     if (contacts.length === 0) {
-      toast.error("No contacts to export");
+      toast.error(t("noContactsToExport"));
       return;
     }
 
@@ -83,7 +99,7 @@ const HomePage: React.FC = () => {
     URL.revokeObjectURL(url);
     document.body.removeChild(a);
     
-    toast.success(`${contacts.length} contacts exported successfully`);
+    toast.success(`${contacts.length} ${t("contactsExported")}`);
   };
 
   const handleImportClick = () => {
@@ -162,7 +178,7 @@ const HomePage: React.FC = () => {
               size="icon"
               className="rounded-full h-10 w-10 shadow-sm"
               onClick={handleHome}
-              aria-label="Home"
+              aria-label={t("home")}
             >
               <Home className="h-5 w-5" />
             </Button>
@@ -175,26 +191,26 @@ const HomePage: React.FC = () => {
                 variant="default"
                 size="icon"
                 className="rounded-full h-10 w-10 shadow-sm"
-                aria-label="Menu"
+                aria-label={t("menu")}
               >
                 <Menu className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-popover border border-border">
               <DropdownMenuItem onClick={handleAddContact}>
-                New Contact
+                {t("newContact")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSearchContact}>
-                Search Contact
+                {t("searchContacts")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleExportContacts}>
                 <FileText className="h-4 w-4 mr-2" />
-                Export Contacts
+                {t("exportContacts")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleImportClick}>
                 <Import className="h-4 w-4 mr-2" />
-                Import Contacts
+                {t("importContacts")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -203,7 +219,7 @@ const HomePage: React.FC = () => {
 
       <div className="px-4 py-3">
         <ServiceSearchBar 
-          placeholder="Search services or tags..."
+          placeholder={t("searchByServiceOrTag")}
           onSearch={handleSearch}
           autoFocus
         />
@@ -215,7 +231,7 @@ const HomePage: React.FC = () => {
             {filteredContacts.length > 0 ? (
               <div className="space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground">
-                  {filteredContacts.length} {filteredContacts.length === 1 ? 'contact' : 'contacts'} found for "{searchQuery}" (searching services/tags)
+                  {filteredContacts.length} {filteredContacts.length === 1 ? t("contactFound") : t("contactsFound")} "{searchQuery}" {t("searchingServices")}
                 </p>
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
@@ -226,12 +242,12 @@ const HomePage: React.FC = () => {
             ) : (
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
-                title="No contacts found"
-                description={`No contacts with service or tag "${searchQuery}" were found.`}
+                title={t("noContactsFound")}
+                description={`${t("noContactsWithService")} "${searchQuery}" ${t("wereFound")}.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
                     <User className="h-4 w-4" />
-                    Add a new contact
+                    {t("addContact")}
                   </Button>
                 }
               />
@@ -240,19 +256,19 @@ const HomePage: React.FC = () => {
         ) : contacts.length > 0 ? (
           <EmptyState
             icon={<TagIcon className="h-12 w-12 opacity-20" />}
-            title="Search for a service"
-            description="Type a service or tag name to find contacts"
+            title={t("searchForService")}
+            description={t("typeServiceOrTag")}
             className="mt-12"
           />
         ) : (
           <EmptyState
             icon={<User className="h-12 w-12 opacity-20" />}
-            title="No contacts yet"
-            description="Add your first contact to get started"
+            title={t("noContacts")}
+            description={t("addYourFirstContact")}
             action={
               <Button onClick={handleAddContact} className="gap-2">
                 <User className="h-4 w-4" />
-                Add a contact
+                {t("addContact")}
               </Button>
             }
             className="mt-12"

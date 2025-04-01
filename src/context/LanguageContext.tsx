@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
 
 // Define all the translations
 export const defaultTranslations = {
@@ -17,20 +17,32 @@ export const defaultTranslations = {
     phone: "Phone",
     address: "Address",
     notes: "Notes",
+    changeLanguage: "Change language",
+    home: "Home",
+    menu: "Menu",
     
     // Header & Navigation
     contacts: "Contacts",
     addContact: "Add Contact",
     searchContacts: "Search Contacts",
     searchContactsByName: "Search contacts by name...",
+    exportContacts: "Export Contacts",
+    importContacts: "Import Contacts",
+    contactsExported: "contacts exported successfully",
+    noContactsToExport: "No contacts to export",
+    typeNameToFind: "Type a name to find contacts",
     
     // Home Page
     myContacts: "My Contacts",
     recentContacts: "Recent Contacts",
-    noContacts: "No contacts found",
-    addYourFirstContact: "Add your first contact",
+    noContacts: "No contacts yet",
+    addYourFirstContact: "Add your first contact to get started",
     searchByServiceOrTag: "Search by service or tag...",
     services: "Services",
+    searchForService: "Search for a service",
+    typeServiceOrTag: "Type a service or tag name to find contacts",
+    searchingServices: "(searching services/tags)",
+    noContactsWithService: "No contacts with service or tag",
     
     // Contact Details
     contactDetails: "Contact Details",
@@ -54,6 +66,7 @@ export const defaultTranslations = {
     
     // Not Found Page
     pageNotFound: "Page Not Found",
+    pageNotFoundDescription: "The page you're looking for couldn't be found. It might have been removed, renamed, or it never existed.",
     returnHome: "Return Home",
     
     // Translation Editor
@@ -73,20 +86,32 @@ export const defaultTranslations = {
     phone: "Téléphone",
     address: "Adresse",
     notes: "Notes",
+    changeLanguage: "Changer de langue",
+    home: "Accueil",
+    menu: "Menu",
     
     // Header & Navigation
     contacts: "Contacts",
     addContact: "Ajouter un contact",
     searchContacts: "Rechercher des contacts",
     searchContactsByName: "Rechercher des contacts par nom...",
+    exportContacts: "Exporter les contacts",
+    importContacts: "Importer des contacts",
+    contactsExported: "contacts exportés avec succès",
+    noContactsToExport: "Aucun contact à exporter",
+    typeNameToFind: "Tapez un nom pour trouver des contacts",
     
     // Home Page
     myContacts: "Mes Contacts",
     recentContacts: "Contacts Récents",
-    noContacts: "Aucun contact trouvé",
-    addYourFirstContact: "Ajouter votre premier contact",
+    noContacts: "Aucun contact pour le moment",
+    addYourFirstContact: "Ajoutez votre premier contact pour commencer",
     searchByServiceOrTag: "Rechercher par service ou tag...",
     services: "Services",
+    searchForService: "Rechercher un service",
+    typeServiceOrTag: "Tapez un service ou un tag pour trouver des contacts",
+    searchingServices: "(recherche par services/tags)",
+    noContactsWithService: "Aucun contact avec le service ou tag",
     
     // Contact Details
     contactDetails: "Détails du contact",
@@ -104,12 +129,13 @@ export const defaultTranslations = {
     contactFound: "contact trouvé pour",
     noContactsFound: "Aucun contact trouvé",
     noContactsWithName: "Aucun contact avec le nom",
-    wereFound: "ont été trouvés",
+    wereFound: "trouvé",
     searchForContact: "Rechercher un contact",
     typeContactName: "Tapez un nom de contact pour trouver des correspondances",
     
     // Not Found Page
     pageNotFound: "Page non trouvée",
+    pageNotFoundDescription: "La page que vous recherchez n'a pas pu être trouvée. Elle a peut-être été supprimée, renommée ou n'a jamais existé.",
     returnHome: "Retourner à l'accueil",
     
     // Translation Editor
@@ -154,18 +180,21 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   });
   
   const [translations, setTranslations] = useState(loadTranslations());
+  // Add a state to force re-renders
+  const [forceUpdate, setForceUpdate] = useState(0);
 
   // Function to update language and save to localStorage
-  const changeLanguage = (newLanguage: Language) => {
+  const changeLanguage = useCallback((newLanguage: Language) => {
     try {
       localStorage.setItem('language', newLanguage);
       setLanguage(newLanguage);
-      // Force a re-render by updating the state
+      // Force a re-render
+      setForceUpdate(prev => prev + 1);
       console.log(`Language changed to: ${newLanguage}`);
     } catch (error) {
       console.error("Error saving language to localStorage:", error);
     }
-  };
+  }, []);
 
   // Save language to localStorage whenever it changes
   useEffect(() => {
@@ -177,32 +206,34 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [language]);
 
-  const updateTranslations = (newTranslations: typeof defaultTranslations) => {
+  const updateTranslations = useCallback((newTranslations: typeof defaultTranslations) => {
     try {
       setTranslations(newTranslations);
       localStorage.setItem('translations', JSON.stringify(newTranslations));
+      // Force a re-render
+      setForceUpdate(prev => prev + 1);
     } catch (error) {
       console.error("Error saving translations to localStorage:", error);
     }
-  };
+  }, []);
 
-  const t = (key: TranslationKey): string => {
+  const t = useCallback((key: TranslationKey): string => {
     if (!translations[language] || !translations[language][key]) {
       console.warn(`Translation missing for key: ${key} in language: ${language}`);
       // Fallback to English if translation is missing
       return translations.en[key] || key;
     }
     return translations[language][key];
-  };
+  }, [language, translations]);
 
-  // Create a new context value on each render to ensure subscribers get notified
-  const contextValue = {
+  // Use useMemo to create a stable context value
+  const contextValue = useMemo(() => ({
     language,
-    setLanguage: changeLanguage, // Use the new function that ensures proper state updates
+    setLanguage: changeLanguage,
     t,
     translations,
     updateTranslations
-  };
+  }), [language, changeLanguage, t, translations, updateTranslations, forceUpdate]);
 
   return (
     <LanguageContext.Provider value={contextValue}>
