@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
@@ -21,7 +20,7 @@ import {
 
 const HomePage: React.FC = () => {
   const { contacts, findContactsByTag, addContact } = useContacts();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,6 +158,10 @@ const HomePage: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const getAppTitle = () => {
+    return language === "en" ? "Backdoor" : "Piston";
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <input
@@ -169,7 +172,7 @@ const HomePage: React.FC = () => {
         className="hidden"
       />
       <Header 
-        title="Piston" 
+        title={getAppTitle()} 
         centerTitle={true}
         leftElement={
           !isHomePage && (
