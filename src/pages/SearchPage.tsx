@@ -11,6 +11,11 @@ import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
 
+// Helper function to remove accents from a string
+const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 const SearchPage: React.FC = () => {
   const { contacts } = useContacts();
   const { t } = useLanguage();
@@ -20,13 +25,14 @@ const SearchPage: React.FC = () => {
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      // Search by name
+      // Search by name with accent insensitivity
+      const normalizedQuery = removeAccents(searchQuery.toLowerCase());
+      
       setFilteredContacts(
-        contacts.filter((contact) =>
-          `${contact.name} ${contact.familyName || ""}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
+        contacts.filter((contact) => {
+          const normalizedName = removeAccents(`${contact.name} ${contact.familyName || ""}`.toLowerCase());
+          return normalizedName.includes(normalizedQuery);
+        })
       );
     } else {
       setFilteredContacts([]);

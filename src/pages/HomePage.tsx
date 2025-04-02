@@ -18,8 +18,12 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
+const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 const HomePage: React.FC = () => {
-  const { contacts, findContactsByTag, addContact } = useContacts();
+  const { contacts, addContact } = useContacts();
   const { t, language } = useLanguage();
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,7 +32,6 @@ const HomePage: React.FC = () => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   
-  // Force re-render when language changes
   const [, setRenderKey] = useState(0);
   
   useEffect(() => {
@@ -44,12 +47,20 @@ const HomePage: React.FC = () => {
   
   useEffect(() => {
     if (searchQuery.trim()) {
-      // Only search by tag/service in the home page
-      setFilteredContacts(findContactsByTag(searchQuery));
+      const normalizedQuery = removeAccents(searchQuery.toLowerCase());
+      
+      setFilteredContacts(
+        contacts.filter((contact) =>
+          contact.tags.some((tag) => {
+            const normalizedTag = removeAccents(tag.name.toLowerCase());
+            return normalizedTag.includes(normalizedQuery);
+          })
+        )
+      );
     } else {
       setFilteredContacts([]);
     }
-  }, [searchQuery, contacts, findContactsByTag]);
+  }, [searchQuery, contacts]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

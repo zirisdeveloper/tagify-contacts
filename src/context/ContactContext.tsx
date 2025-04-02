@@ -3,6 +3,11 @@ import { Contact, Tag } from "../types";
 import { toast } from "sonner";
 import { generateId } from "@/utils/idGenerator";
 
+// Helper function to remove accents from a string
+const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 interface ContactContextType {
   contacts: Contact[];
   tags: Tag[];
@@ -130,10 +135,13 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const findContactsByTag = (tagName: string): Contact[] => {
     if (!tagName.trim()) return [];
     
+    const normalizedTagName = removeAccents(tagName.toLowerCase());
+    
     return contacts.filter((contact) =>
-      contact.tags.some((tag) => 
-        tag.name.toLowerCase().includes(tagName.toLowerCase())
-      )
+      contact.tags.some((tag) => {
+        const normalizedTag = removeAccents(tag.name.toLowerCase());
+        return normalizedTag.includes(normalizedTagName);
+      })
     );
   };
   
