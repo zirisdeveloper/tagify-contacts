@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
 
 // Define all the translations
@@ -19,6 +20,9 @@ export const defaultTranslations = {
     changeLanguage: "Change language",
     home: "Home",
     menu: "Menu",
+    about: "About",
+    close: "Close",
+    developedBy: "Developed by",
     
     // Header & Navigation
     contacts: "Contacts",
@@ -88,6 +92,9 @@ export const defaultTranslations = {
     changeLanguage: "Changer de langue",
     home: "Accueil",
     menu: "Menu",
+    about: "À propos",
+    close: "Fermer",
+    developedBy: "Développé par",
     
     // Header & Navigation
     contacts: "Contacts",
@@ -144,12 +151,6 @@ export const defaultTranslations = {
 
 type Language = "en" | "fr";
 type TranslationKey = keyof typeof defaultTranslations.en;
-
-interface Translations {
-  about: string;
-  close: string;
-  developedBy: string;
-}
 
 interface LanguageContextType {
   language: Language;

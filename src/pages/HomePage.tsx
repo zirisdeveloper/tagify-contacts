@@ -315,11 +315,11 @@ const HomePage: React.FC = () => {
               {language === "en" ? "Backdoor" : "Piston"} v1.0
             </AlertDialogTitle>
             <div className="py-4 text-center">
-              {t("developedBy")} Mahfoud Bouziri
+              Developed by Mahfoud Bouziri
             </div>
           </AlertDialogHeader>
-          <div className="flex justify-between items-end mt-8">
-            <div className="flex space-x-2">
+          <div className="flex items-center justify-between mt-8">
+            <div className="flex items-center space-x-2">
               <a 
                 href="https://facebook.com/zirisdeveloper" 
                 target="_blank" 
@@ -336,11 +336,11 @@ const HomePage: React.FC = () => {
               >
                 <Mail className="h-5 w-5" />
               </a>
+              <span className="text-sm text-muted-foreground">@zirisdeveloper</span>
             </div>
-            <div className="text-sm text-muted-foreground">@zirisdeveloper</div>
           </div>
           <AlertDialogFooter>
-            <AlertDialogAction>{t("close")}</AlertDialogAction>
+            <AlertDialogAction>Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
