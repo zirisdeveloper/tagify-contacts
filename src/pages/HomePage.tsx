@@ -336,7 +336,7 @@ const HomePage: React.FC = () => {
               >
                 <Mail className="h-5 w-5" />
               </a>
-              <span className="text-sm text-muted-foreground">@zirisdeveloper</span>
+              <span className="text-sm text-muted-foreground">copyright zirisdeveloper</span>
             </div>
           </div>
           <AlertDialogFooter>
