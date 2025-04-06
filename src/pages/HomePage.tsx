@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home, Info, Facebook, Mail } from "lucide-react";
@@ -225,9 +226,11 @@ const HomePage: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-popover border border-border">
               <DropdownMenuItem onClick={handleAddContact}>
+                <User className="h-4 w-4 mr-2" />
                 {t("newContact")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSearchContact}>
+                <SearchIcon className="h-4 w-4 mr-2" />
                 {t("searchContacts")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -336,8 +339,8 @@ const HomePage: React.FC = () => {
               >
                 <Mail className="h-5 w-5" />
               </a>
-              <span className="text-sm text-muted-foreground">copyright zirisdeveloper</span>
             </div>
+            <span className="text-sm text-muted-foreground">copyright zirisdeveloper</span>
           </div>
           <AlertDialogFooter>
             <AlertDialogAction>{t("close")}</AlertDialogAction>
