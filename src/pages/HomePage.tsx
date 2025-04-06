@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home } from "lucide-react";
+import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home, Info, Facebook, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -17,6 +17,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -33,6 +41,7 @@ const HomePage: React.FC = () => {
   const isHomePage = location.pathname === "/";
   
   const [, setRenderKey] = useState(0);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
   
   useEffect(() => {
     const handleLanguageChange = () => {
@@ -81,6 +90,10 @@ const HomePage: React.FC = () => {
     if (searchInput) {
       searchInput.value = "";
     }
+  };
+
+  const handleAboutClick = () => {
+    setAboutDialogOpen(true);
   };
 
   const handleExportContacts = () => {
@@ -226,6 +239,11 @@ const HomePage: React.FC = () => {
                 <Import className="h-4 w-4 mr-2" />
                 {t("importContacts")}
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleAboutClick}>
+                <Info className="h-4 w-4 mr-2" />
+                {t("about")}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         }
@@ -289,6 +307,43 @@ const HomePage: React.FC = () => {
           />
         )}
       </div>
+
+      <AlertDialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center text-xl">
+              {language === "en" ? "Backdoor" : "Piston"} v1.0
+            </AlertDialogTitle>
+            <div className="py-4 text-center">
+              {t("developedBy")} Mahfoud Bouziri
+            </div>
+          </AlertDialogHeader>
+          <div className="flex justify-between items-end mt-8">
+            <div className="flex space-x-2">
+              <a 
+                href="https://facebook.com/zirisdeveloper" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-accent transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a 
+                href="mailto:zirisdeveloper@gmail.com"
+                className="p-2 rounded-full hover:bg-accent transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="h-5 w-5" />
+              </a>
+            </div>
+            <div className="text-sm text-muted-foreground">@zirisdeveloper</div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction>{t("close")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

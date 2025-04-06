@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
 
 // Define all the translations
@@ -146,6 +145,12 @@ export const defaultTranslations = {
 type Language = "en" | "fr";
 type TranslationKey = keyof typeof defaultTranslations.en;
 
+interface Translations {
+  about: string;
+  close: string;
+  developedBy: string;
+}
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
@@ -153,6 +158,18 @@ interface LanguageContextType {
   translations: typeof defaultTranslations;
   updateTranslations: (newTranslations: typeof defaultTranslations) => void;
 }
+
+const en: Translations = {
+  about: "About",
+  close: "Close",
+  developedBy: "Developed by",
+};
+
+const fr: Translations = {
+  about: "À propos",
+  close: "Fermer",
+  developedBy: "Développé par",
+};
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
