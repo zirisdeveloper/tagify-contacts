@@ -160,18 +160,6 @@ interface LanguageContextType {
   updateTranslations: (newTranslations: typeof defaultTranslations) => void;
 }
 
-const en: Translations = {
-  about: "About",
-  close: "Close",
-  developedBy: "Developed by",
-};
-
-const fr: Translations = {
-  about: "À propos",
-  close: "Fermer",
-  developedBy: "Développé par",
-};
-
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 // Load translations from localStorage or use defaults

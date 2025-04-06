@@ -315,7 +315,7 @@ const HomePage: React.FC = () => {
               {language === "en" ? "Backdoor" : "Piston"} v1.0
             </AlertDialogTitle>
             <div className="py-4 text-center">
-              Developed by Mahfoud Bouziri
+              {t("developedBy")} Mahfoud Bouziri
             </div>
           </AlertDialogHeader>
           <div className="flex items-center justify-between mt-8">
@@ -340,7 +340,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           <AlertDialogFooter>
-            <AlertDialogAction>Close</AlertDialogAction>
+            <AlertDialogAction>{t("close")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
