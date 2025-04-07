@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Piston</string>
+    <string name="title_activity_main">Piston</string>
+    <string name="package_name">com.zirisdeveloper.piston</string>
+    <string name="custom_url_scheme">com.zirisdeveloper.piston</string>
+</resources>
