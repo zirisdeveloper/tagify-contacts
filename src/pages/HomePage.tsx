@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home, Info, Facebook, Mail } from "lucide-react";
@@ -315,7 +314,7 @@ const HomePage: React.FC = () => {
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center text-xl">
-              {language === "en" ? "Backdoor" : "Piston"} v1.0
+              {language === "en" ? "Backdoor" : "Piston"} v.1.0
             </AlertDialogTitle>
             <div className="py-4 text-center">
               {t("developedBy")} Mahfoud Bouziri

@@ -49,6 +49,7 @@ const ContactDetailsPage: React.FC = () => {
   const [editedName, setEditedName] = useState("");
   const [editedFamilyName, setEditedFamilyName] = useState("");
   const [editedPhoneNumber, setEditedPhoneNumber] = useState("");
+  const [editedPhoneNumber2, setEditedPhoneNumber2] = useState("");
   const [isAddTagOpen, setIsAddTagOpen] = useState(false);
   const [newTags, setNewTags] = useState<Tag[]>([]);
 
@@ -75,6 +76,7 @@ const ContactDetailsPage: React.FC = () => {
     setEditedName(contact.name);
     setEditedFamilyName(contact.familyName || "");
     setEditedPhoneNumber(contact.phoneNumber || "");
+    setEditedPhoneNumber2(contact.phoneNumber2 || "");
     setIsEditOpen(true);
   };
 
@@ -84,6 +86,7 @@ const ContactDetailsPage: React.FC = () => {
         name: editedName,
         familyName: editedFamilyName || undefined,
         phoneNumber: editedPhoneNumber || undefined,
+        phoneNumber2: editedPhoneNumber2 || undefined,
       });
       setIsEditOpen(false);
     }
@@ -93,13 +96,6 @@ const ContactDetailsPage: React.FC = () => {
     setNewTags([]);
     setIsAddTagOpen(true);
   };
-  /*
-  const handleAddTag = (tagName: string) => {
-    if (!newTags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase()) &&
-        !contact.tags.some((tag) => tag.name.toLowerCase() === tagName.toLowerCase())) {
-      setNewTags([...newTags, { id: crypto.randomUUID(), name: tagName }]);
-    }
-  };*/
 
   const handleAddTag = (tagName: string) => {
     if (
@@ -191,12 +187,20 @@ const ContactDetailsPage: React.FC = () => {
               <h2 className="text-xl font-medium">
                 {contact.name} {contact.familyName}
               </h2>
-              {contact.phoneNumber && (
-                <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span>{contact.phoneNumber}</span>
-                </div>
-              )}
+              <div className="flex flex-col gap-1 mt-1">
+                {contact.phoneNumber && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{contact.phoneNumber} (Primary)</span>
+                  </div>
+                )}
+                {contact.phoneNumber2 && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{contact.phoneNumber2} (Secondary)</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -264,12 +268,23 @@ const ContactDetailsPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Label htmlFor="phoneNumber">Primary Phone Number</Label>
               <Input
                 id="phoneNumber"
                 value={editedPhoneNumber}
                 onChange={(e) => setEditedPhoneNumber(e.target.value)}
-                placeholder="Enter phone number"
+                placeholder="Enter primary phone number"
+                type="tel"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber2">Secondary Phone Number</Label>
+              <Input
+                id="phoneNumber2"
+                value={editedPhoneNumber2}
+                onChange={(e) => setEditedPhoneNumber2(e.target.value)}
+                placeholder="Enter secondary phone number"
                 type="tel"
               />
             </div>

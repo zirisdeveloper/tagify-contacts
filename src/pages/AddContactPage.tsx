@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Search, User } from "lucide-react";
+import { Plus, Search, User, Phone } from "lucide-react";
 import { useContacts } from "@/context/ContactContext";
 import { Tag } from "@/types";
 import Header from "@/components/Header";
@@ -28,6 +28,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   familyName: z.string().optional(),
   phoneNumber: z.string().optional(),
+  phoneNumber2: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -46,6 +47,7 @@ const AddContactPage: React.FC = () => {
       name: "",
       familyName: "",
       phoneNumber: "",
+      phoneNumber2: "",
     },
   });
 
@@ -93,7 +95,6 @@ const AddContactPage: React.FC = () => {
   };
 
   const onSubmit = (data: FormData) => {
-    // Validate that at least one tag is added
     if (selectedTags.length === 0) {
       setTagsError("At least one tag is required");
       return;
@@ -103,6 +104,7 @@ const AddContactPage: React.FC = () => {
       name: data.name,
       familyName: data.familyName,
       phoneNumber: data.phoneNumber,
+      phoneNumber2: data.phoneNumber2,
       tags: selectedTags,
     });
 
@@ -179,11 +181,29 @@ const AddContactPage: React.FC = () => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>Primary Phone Number</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Enter phone number"
+                        placeholder="Enter primary phone number"
+                        type="tel"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Secondary Phone Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Enter secondary phone number"
                         type="tel"
                       />
                     </FormControl>

@@ -4,6 +4,7 @@ export interface Contact {
   name: string;
   familyName?: string;
   phoneNumber?: string;
+  phoneNumber2?: string;
   tags: Tag[];
 }
 
