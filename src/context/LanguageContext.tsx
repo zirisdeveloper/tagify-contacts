@@ -1,257 +1,191 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
-
-// Define all the translations
-export const defaultTranslations = {
-  en: {
-    // Common
-    search: "Search",
-    add: "Add",
-    cancel: "Cancel",
-    save: "Save",
-    delete: "Delete",
-    edit: "Edit",
-    back: "Back",
-    name: "Name",
-    email: "Email",
-    phone: "Phone",
-    address: "Address",
-    notes: "Notes",
-    changeLanguage: "Change language",
-    home: "Home",
-    menu: "Menu",
-    about: "About",
-    close: "Close",
-    developedBy: "Developed by",
-    
-    // Header & Navigation
-    contacts: "Contacts",
-    addContact: "Add Contact",
-    searchContacts: "Search Contacts",
-    searchContactsByName: "Search contacts by name...",
-    exportContacts: "Export Contacts",
-    importContacts: "Import Contacts",
-    contactsExported: "contacts exported successfully",
-    noContactsToExport: "No contacts to export",
-    typeNameToFind: "Type a name to find contacts",
-    
-    // Home Page
-    myContacts: "My Contacts",
-    recentContacts: "Recent Contacts",
-    noContacts: "No contacts yet",
-    addYourFirstContact: "Add your first contact to get started",
-    searchByServiceOrTag: "Search by service or tag...",
-    services: "Services",
-    searchForService: "Search for a service",
-    typeServiceOrTag: "Type a service or tag name to find contacts",
-    searchingServices: "(searching services/tags)",
-    noContactsWithService: "No contacts with service or tag",
-    
-    // Contact Details
-    contactDetails: "Contact Details",
-    phoneNumber: "Phone Number",
-    emailAddress: "Email Address",
-    familyName: "Family Name",
-    
-    // Add/Edit Contact
-    newContact: "New Contact",
-    editContact: "Edit Contact",
-    
-    // Search Page
-    searchResults: "Search Results",
-    contactsFound: "contacts found for",
-    contactFound: "contact found for",
-    noContactsFound: "No contacts found",
-    noContactsWithName: "No contacts with name",
-    wereFound: "were found",
-    searchForContact: "Search for a contact",
-    typeContactName: "Type a contact name to find matches",
-    
-    // Not Found Page
-    pageNotFound: "Page Not Found",
-    pageNotFoundDescription: "The page you're looking for couldn't be found. It might have been removed, renamed, or it never existed.",
-    returnHome: "Return Home",
-    
-    // Translation Editor
-    modifyTranslations: "Modify Translations",
-  },
-  fr: {
-    // Common
-    search: "Rechercher",
-    add: "Ajouter",
-    cancel: "Annuler",
-    save: "Sauvegarder",
-    delete: "Supprimer",
-    edit: "Modifier",
-    back: "Retour",
-    name: "Nom",
-    email: "Email",
-    phone: "Téléphone",
-    address: "Adresse",
-    notes: "Notes",
-    changeLanguage: "Changer de langue",
-    home: "Accueil",
-    menu: "Menu",
-    about: "À propos",
-    close: "Fermer",
-    developedBy: "Développé par",
-    
-    // Header & Navigation
-    contacts: "Contacts",
-    addContact: "Ajouter un contact",
-    searchContacts: "Rechercher des contacts",
-    searchContactsByName: "Rechercher des contacts par nom...",
-    exportContacts: "Exporter les contacts",
-    importContacts: "Importer des contacts",
-    contactsExported: "contacts exportés avec succès",
-    noContactsToExport: "Aucun contact à exporter",
-    typeNameToFind: "Tapez un nom pour trouver des contacts",
-    
-    // Home Page
-    myContacts: "Mes Contacts",
-    recentContacts: "Contacts Récents",
-    noContacts: "Aucun contact pour le moment",
-    addYourFirstContact: "Ajoutez votre premier contact pour commencer",
-    searchByServiceOrTag: "Rechercher par service ou tag...",
-    services: "Services",
-    searchForService: "Rechercher un service",
-    typeServiceOrTag: "Tapez un service ou un tag pour trouver des contacts",
-    searchingServices: "(recherche par services/tags)",
-    noContactsWithService: "Aucun contact avec le service ou tag",
-    
-    // Contact Details
-    contactDetails: "Détails du contact",
-    phoneNumber: "Numéro de téléphone",
-    emailAddress: "Adresse email",
-    familyName: "Nom de famille",
-    
-    // Add/Edit Contact
-    newContact: "Nouveau Contact",
-    editContact: "Modifier le Contact",
-    
-    // Search Page
-    searchResults: "Résultats de recherche",
-    contactsFound: "contacts trouvés pour",
-    contactFound: "contact trouvé pour",
-    noContactsFound: "Aucun contact trouvé",
-    noContactsWithName: "Aucun contact avec le nom",
-    wereFound: "trouvé",
-    searchForContact: "Rechercher un contact",
-    typeContactName: "Tapez un nom de contact pour trouver des correspondances",
-    
-    // Not Found Page
-    pageNotFound: "Page non trouvée",
-    pageNotFoundDescription: "La page que vous recherchez n'a pas pu être trouvée. Elle a peut-être été supprimée, renommée ou n'a jamais existé.",
-    returnHome: "Retourner à l'accueil",
-    
-    // Translation Editor
-    modifyTranslations: "Modifier les Traductions",
-  }
-};
-
-type Language = "en" | "fr";
-type TranslationKey = keyof typeof defaultTranslations.en;
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (language: Language) => void;
-  t: (key: TranslationKey) => string;
-  translations: typeof defaultTranslations;
-  updateTranslations: (newTranslations: typeof defaultTranslations) => void;
+interface LanguageContextProps {
+  language: string;
+  t: i18next.TFunction<"translation", undefined>;
+  setLanguage: (lang: string) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextProps>({
+  language: 'en',
+  t: (key: string) => key,
+  setLanguage: () => {},
+});
 
-// Load translations from localStorage or use defaults
-const loadTranslations = () => {
-  try {
-    const storedTranslations = localStorage.getItem('translations');
-    return storedTranslations ? JSON.parse(storedTranslations) : defaultTranslations;
-  } catch (error) {
-    console.error("Error loading translations from localStorage:", error);
-    return defaultTranslations;
-  }
-};
+interface LanguageProviderProps {
+  children: React.ReactNode;
+}
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Initialize language from localStorage or default to "fr"
-  const [language, setLanguage] = useState<Language>(() => {
-    try {
-      const storedLanguage = localStorage.getItem('language');
-      return (storedLanguage as Language) || "fr";
-    } catch (error) {
-      console.error("Error reading language from localStorage:", error);
-      return "fr";
-    }
-  });
-  
-  const [translations, setTranslations] = useState(loadTranslations());
-  // Add a state to force re-renders
-  const [forceUpdate, setForceUpdate] = useState(0);
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState('en');
 
-  // Function to update language and save to localStorage
-  const changeLanguage = useCallback((newLanguage: Language) => {
-    try {
-      localStorage.setItem('language', newLanguage);
-      setLanguage(newLanguage);
-      // Force a re-render
-      setForceUpdate(prev => prev + 1);
-      console.log(`Language changed to: ${newLanguage}`);
-    } catch (error) {
-      console.error("Error saving language to localStorage:", error);
-    }
-  }, []);
-
-  // Save language to localStorage whenever it changes
   useEffect(() => {
-    try {
-      localStorage.setItem('language', language);
-      console.log(`Language saved to localStorage: ${language}`);
-    } catch (error) {
-      console.error("Error saving language to localStorage:", error);
-    }
-  }, [language]);
+    i18next
+      .use(LanguageDetector)
+      .use(initReactI18next)
+      .init({
+        debug: false,
+        fallbackLng: 'en',
+        interpolation: {
+          escapeValue: false,
+        },
+        resources: {
+          en: {
+            translation: {
+              appName: 'Backdoor',
+              newContact: 'New Contact',
+              searchContacts: 'Search Contacts',
+              exportContacts: 'Export Contacts',
+              importContacts: 'Import Contacts',
+              about: 'About',
+              searchByServiceOrTag: 'Search by service or tag',
+              noContactsFound: 'No Contacts Found',
+              noContactsWithService: 'No contacts with the service',
+              wereFound: 'were found',
+              addContact: 'Add Contact',
+              searchForService: 'Search for a service',
+              typeServiceOrTag: 'Type a service or tag to search for contacts.',
+              noContacts: 'No Contacts',
+              addYourFirstContact: 'Add your first contact',
+              contactsFound: 'contacts found',
+              contactFound: 'contact found',
+              searchingServices: 'searching services',
+              typeNameToFind: 'Type a name to find',
+              home: 'Home',
+              menu: 'Menu',
+              developedBy: 'Developed by',
+              close: 'Close',
+              noContactsToExport: 'No contacts to export',
+              contactsExported: 'contacts exported',
+              importFailed: 'Import failed',
+              invalidFileFormat: 'Invalid file format',
+              exportError: "Export failed. Please try again.",
+            },
+          },
+          fr: {
+            translation: {
+              appName: 'Piston',
+              newContact: 'Nouveau Contact',
+              searchContacts: 'Rechercher des Contacts',
+              exportContacts: 'Exporter les Contacts',
+              importContacts: 'Importer des Contacts',
+              about: 'À propos',
+              searchByServiceOrTag: 'Recherche par service ou tag',
+              noContactsFound: 'Aucun Contact Trouvé',
+              noContactsWithService: 'Aucun contact avec le service',
+              wereFound: 'ont été trouvés',
+              addContact: 'Ajouter un Contact',
+              searchForService: 'Rechercher un service',
+              typeServiceOrTag: 'Tapez un service ou un tag pour rechercher des contacts.',
+              noContacts: 'Aucun Contact',
+              addYourFirstContact: 'Ajouter votre premier contact',
+              contactsFound: 'contacts trouvés',
+              contactFound: 'contact trouvé',
+              searchingServices: 'recherche de services',
+              typeNameToFind: 'Tapez un nom à trouver',
+              home: 'Accueil',
+              menu: 'Menu',
+              developedBy: 'Développé par',
+              close: 'Fermer',
+              noContactsToExport: 'Aucun contact à exporter',
+              contactsExported: 'contacts exportés',
+              importFailed: 'Échec de l\'importation',
+              invalidFileFormat: 'Format de fichier invalide',
+              exportError: "Échec de l'exportation. Veuillez réessayer.",
+            },
+          },
+          ar: {
+            translation: {
+              appName: 'Piston',
+              newContact: 'جهة اتصال جديدة',
+              searchContacts: 'البحث عن جهات الاتصال',
+              exportContacts: 'تصدير جهات الاتصال',
+              importContacts: 'استيراد جهات الاتصال',
+              about: 'حول',
+              searchByServiceOrTag: 'البحث عن طريق الخدمة أو العلامة',
+              noContactsFound: 'لم يتم العثور على جهات اتصال',
+              noContactsWithService: 'لم يتم العثور على جهات اتصال بهذه الخدمة',
+              wereFound: 'تم العثور عليها',
+              addContact: 'إضافة جهة اتصال',
+              searchForService: 'البحث عن خدمة',
+              typeServiceOrTag: 'اكتب خدمة أو علامة للبحث عن جهات الاتصال.',
+              noContacts: 'لا توجد جهات اتصال',
+              addYourFirstContact: 'أضف جهة الاتصال الأولى الخاصة بك',
+              contactsFound: 'جهات الاتصال التي تم العثور عليها',
+              contactFound: 'جهة الاتصال التي تم العثور عليها',
+              searchingServices: 'البحث عن الخدمات',
+              typeNameToFind: 'اكتب اسما للعثور عليه',
+              home: 'الرئيسية',
+              menu: 'القائمة',
+              developedBy: 'تم التطوير بواسطة',
+              close: 'إغلاق',
+              noContactsToExport: 'لا توجد جهات اتصال للتصدير',
+              contactsExported: 'جهات الاتصال المصدرة',
+              importFailed: 'فشل الاستيراد',
+              invalidFileFormat: 'تنسيق ملف غير صالح',
+              exportError: "فشلت عملية التصدير. حاول مرة اخرى.",
+            },
+          },
+           es: {
+            translation: {
+              appName: 'Piston',
+              newContact: 'Nuevo Contacto',
+              searchContacts: 'Buscar Contactos',
+              exportContacts: 'Exportar Contactos',
+              importContacts: 'Importar Contactos',
+              about: 'Acerca de',
+              searchByServiceOrTag: 'Buscar por servicio o etiqueta',
+              noContactsFound: 'No se encontraron contactos',
+              noContactsWithService: 'No se encontraron contactos con el servicio',
+              wereFound: 'fueron encontrados',
+              addContact: 'Añadir Contacto',
+              searchForService: 'Buscar un servicio',
+              typeServiceOrTag: 'Escribe un servicio o etiqueta para buscar contactos.',
+              noContacts: 'Sin contactos',
+              addYourFirstContact: 'Añade tu primer contacto',
+              contactsFound: 'contactos encontrados',
+              contactFound: 'contacto encontrado',
+              searchingServices: 'buscando servicios',
+              typeNameToFind: 'Escribe un nombre para encontrar',
+              home: 'Inicio',
+              menu: 'Menú',
+              developedBy: 'Desarrollado por',
+              close: 'Cerrar',
+              noContactsToExport: 'No hay contactos para exportar',
+              contactsExported: 'contactos exportados',
+              importFailed: 'Importación fallida',
+              invalidFileFormat: 'Formato de archivo inválido',
+              exportError: "Error en la exportación. Inténtalo de nuevo.",
+            },
+          },
+        },
+      });
 
-  const updateTranslations = useCallback((newTranslations: typeof defaultTranslations) => {
-    try {
-      setTranslations(newTranslations);
-      localStorage.setItem('translations', JSON.stringify(newTranslations));
-      // Force a re-render
-      setForceUpdate(prev => prev + 1);
-    } catch (error) {
-      console.error("Error saving translations to localStorage:", error);
-    }
+    i18next.on('languageChanged', (lng) => {
+      setLanguage(lng);
+      document.documentElement.setAttribute('lang', lng);
+    });
+
+    setLanguage(i18next.language);
+    document.documentElement.setAttribute('lang', i18next.language);
+
+    return () => {
+      i18next.off('languageChanged');
+    };
   }, []);
 
-  const t = useCallback((key: TranslationKey): string => {
-    if (!translations[language] || !translations[language][key]) {
-      console.warn(`Translation missing for key: ${key} in language: ${language}`);
-      // Fallback to English if translation is missing
-      return translations.en[key] || key;
-    }
-    return translations[language][key];
-  }, [language, translations]);
-
-  // Use useMemo to create a stable context value
-  const contextValue = useMemo(() => ({
-    language,
-    setLanguage: changeLanguage,
-    t,
-    translations,
-    updateTranslations
-  }), [language, changeLanguage, t, translations, updateTranslations, forceUpdate]);
+  const changeLanguage = (lang: string) => {
+    i18next.changeLanguage(lang);
+  };
 
   return (
-    <LanguageContext.Provider value={contextValue}>
+    <LanguageContext.Provider value={{ language, t: i18next.t, setLanguage: changeLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = (): LanguageContextType => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
-  }
-  return context;
-};
+export const useLanguage = () => useContext(LanguageContext);

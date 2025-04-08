@@ -10,6 +10,7 @@ import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
 import { toast } from "sonner";
+import { exportJsonToFile } from "@/utils/fileSystem";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,7 +97,7 @@ const HomePage: React.FC = () => {
     setAboutDialogOpen(true);
   };
 
-  const handleExportContacts = () => {
+  const handleExportContacts = async () => {
     if (contacts.length === 0) {
       toast.error(t("noContactsToExport"));
       return;
@@ -107,22 +108,14 @@ const HomePage: React.FC = () => {
       exportDate: new Date().toISOString()
     };
 
-    const jsonString = JSON.stringify(dataToExport, null, 2);
+    const filename = `piston-contacts-${new Date().toISOString().split("T")[0]}.json`;
     
-    const blob = new Blob([jsonString], { type: "application/json" });
-    
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `piston-contacts-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast.success(`${contacts.length} ${t("contactsExported")}`);
+    await exportJsonToFile(
+      dataToExport, 
+      filename, 
+      `${contacts.length} ${t("contactsExported")}`,
+      t("exportError") || "Export failed"
+    );
   };
 
   const handleImportClick = () => {
