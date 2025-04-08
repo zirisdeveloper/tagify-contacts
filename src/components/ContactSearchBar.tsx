@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Search, X, Mic, MicOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ContactSearchBarProps {
   placeholder?: string;
@@ -18,35 +19,48 @@ const ContactSearchBar: React.FC<ContactSearchBarProps> = ({
   className,
   autoFocus = false,
 }) => {
-  const [query, setQuery] = React.useState("");
-  const [isListening, setIsListening] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const recognitionRef = React.useRef<any>(null);
+  const [query, setQuery] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const { language } = useLanguage();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
   }, [autoFocus]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Clean up the previous recognition instance
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        console.error("Error cleaning up speech recognition:", e);
+      }
+      recognitionRef.current = null;
+    }
+
     // Initialize speech recognition if supported
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'en-US';
+      
+      // Set language based on app language
+      recognitionRef.current.lang = language === 'en' ? 'en-US' : 'ar-MA';
 
-      recognitionRef.current.onresult = (event) => {
+      recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setQuery(transcript);
         onSearch(transcript);
         setIsListening(false);
       };
 
-      recognitionRef.current.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error, event);
         toast.error("Voice recognition failed. Please try again.");
         setIsListening(false);
       };
@@ -58,10 +72,14 @@ const ContactSearchBar: React.FC<ContactSearchBarProps> = ({
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {
+          console.error("Error cleaning up speech recognition:", e);
+        }
       }
     };
-  }, [onSearch]);
+  }, [onSearch, language]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -78,21 +96,52 @@ const ContactSearchBar: React.FC<ContactSearchBarProps> = ({
   };
 
   const toggleListening = () => {
-    if (!recognitionRef.current) {
+    if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       toast.error("Speech recognition is not supported in this browser");
       return;
     }
 
     if (isListening) {
-      recognitionRef.current.abort();
-      setIsListening(false);
+      try {
+        if (recognitionRef.current) {
+          recognitionRef.current.abort();
+        }
+        setIsListening(false);
+      } catch (error) {
+        console.error("Error stopping speech recognition:", error);
+      }
     } else {
       try {
+        if (!recognitionRef.current) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          recognitionRef.current = new SpeechRecognition();
+          recognitionRef.current.continuous = false;
+          recognitionRef.current.interimResults = false;
+          recognitionRef.current.lang = language === 'en' ? 'en-US' : 'ar-MA';
+
+          recognitionRef.current.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setQuery(transcript);
+            onSearch(transcript);
+            setIsListening(false);
+          };
+
+          recognitionRef.current.onerror = (event: any) => {
+            console.error('Speech recognition error', event.error, event);
+            toast.error("Voice recognition failed. Please try again.");
+            setIsListening(false);
+          };
+
+          recognitionRef.current.onend = () => {
+            setIsListening(false);
+          };
+        }
+
         recognitionRef.current.start();
         setIsListening(true);
       } catch (error) {
         console.error("Speech recognition error:", error);
-        toast.error("Could not start voice recognition");
+        toast.error("Could not start voice recognition. Please check microphone permissions.");
       }
     }
   };
