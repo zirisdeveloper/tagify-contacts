@@ -17,7 +17,7 @@ const LanguageSelector: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
-  const handleLanguageChange = (newLanguage: "en" | "fr") => {
+  const handleLanguageChange = (newLanguage: string) => {
     if (language !== newLanguage) {
       setLanguage(newLanguage);
       // Show toast notification about language change
