@@ -11,7 +11,7 @@ export interface TranslationsType {
 
 interface LanguageContextProps {
   language: string;
-  t: i18next.TFunction<"translation", undefined>;
+  t: (key: string) => string;
   setLanguage: (lang: string) => void;
   translations: TranslationsType;
   updateTranslations: (newTranslations: TranslationsType) => void;

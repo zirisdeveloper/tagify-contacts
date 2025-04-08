@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Save } from "lucide-react";
 
 const TranslationEditorPage: React.FC = () => {
@@ -20,10 +20,7 @@ const TranslationEditorPage: React.FC = () => {
 
   const handleSaveTranslations = () => {
     updateTranslations(editableTranslations);
-    toast({
-      title: t("save") + " " + t("modifyTranslations").toLowerCase(),
-      description: "Your translation changes have been saved successfully."
-    });
+    toast.success("Your translation changes have been saved successfully.");
   };
 
   const handleInputChange = (key: string, value: string) => {
@@ -60,19 +57,12 @@ const TranslationEditorPage: React.FC = () => {
         
         if (parsed.en && parsed.fr) {
           setEditableTranslations(parsed);
-          toast({
-            title: "Translations imported",
-            description: "Your translation file has been successfully imported."
-          });
+          toast.success("Your translation file has been successfully imported.");
         } else {
           throw new Error("Invalid translation format");
         }
       } catch (error) {
-        toast({
-          title: "Error importing translations",
-          description: "The file format is invalid. Please use a proper translation JSON file.",
-          variant: "destructive"
-        });
+        toast.error("The file format is invalid. Please use a proper translation JSON file.");
       }
     };
   };
