@@ -22,14 +22,19 @@ export const exportJsonToFile = async (
     // Check if the File System Access API is available (modern browsers)
     if ('showSaveFilePicker' in window) {
       try {
+        // Set default directory to Downloads folder if possible
+        // Note: Most browsers don't allow specifying the default directory due to security reasons
         const fileHandle = await (window as any).showSaveFilePicker({
           suggestedName: filename,
           types: [{
             description: 'JSON File',
             accept: { 'application/json': ['.json'] },
           }],
+          // This is where folder selection happens - the dialog will open
+          // and user can navigate to any folder they want
         });
         
+        // Once user selects a location, write the file there
         const writableStream = await fileHandle.createWritable();
         await writableStream.write(blob);
         await writableStream.close();
@@ -37,28 +42,45 @@ export const exportJsonToFile = async (
         toast.success(successMessage);
         return;
       } catch (err) {
-        // User canceled the save dialog or browser doesn't properly support the API
+        console.error('File system access error:', err);
+        // Only fall back if there's a real error, not if user canceled the dialog
         if ((err as Error)?.name !== 'AbortError') {
-          console.error('File system error:', err);
           // Fall back to traditional download
+          console.log('Falling back to traditional download method');
+          fallbackDownload(blob, filename, successMessage);
+        } else {
+          // User canceled the save dialog
+          console.log('User canceled the save dialog');
         }
       }
+    } else {
+      // Browser doesn't support File System Access API
+      console.log('File System Access API not supported, using fallback method');
+      fallbackDownload(blob, filename, successMessage);
     }
-    
-    // Fallback method for browsers without File System Access API
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast.success(successMessage);
   } catch (error) {
     console.error('Export error:', error);
     toast.error(errorMessage);
   }
 };
+
+/**
+ * Fallback method for browsers that don't support the File System Access API
+ */
+const fallbackDownload = (blob: Blob, filename: string, successMessage: string): void => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  
+  // Clean up
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }, 100);
+  
+  toast.success(successMessage);
+};
+
