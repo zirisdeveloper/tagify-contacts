@@ -1,3 +1,4 @@
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
@@ -5,6 +6,9 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // Fallback repositories if Google's servers are unreachable
+        maven { url "https://repo1.maven.org/maven2/" }
+        maven { url "https://jcenter.bintray.com/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.2'
@@ -22,13 +26,12 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // Fallback repositories if Google's servers are unreachable
+        maven { url "https://repo1.maven.org/maven2/" }
+        maven { url "https://jcenter.bintray.com/" }
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-
-
-
