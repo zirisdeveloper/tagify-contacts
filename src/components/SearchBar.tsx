@@ -25,6 +25,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const recognitionRef = useRef<any>(null);
   const { language } = useLanguage();
 
+  // Function to get the correct speech recognition language code
+  const getSpeechLanguage = () => {
+    switch (language) {
+      case 'en':
+        return 'en-US';
+      case 'fr':
+        return 'fr-FR';
+      case 'ar':
+        return 'ar-MA';
+      default:
+        return 'en-US';
+    }
+  };
+
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
@@ -50,7 +64,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       recognitionRef.current.interimResults = false;
       
       // Set language based on app language
-      recognitionRef.current.lang = language === 'en' ? 'en-US' : 'ar-MA';
+      recognitionRef.current.lang = getSpeechLanguage();
 
       recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
@@ -117,7 +131,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           recognitionRef.current = new SpeechRecognition();
           recognitionRef.current.continuous = false;
           recognitionRef.current.interimResults = false;
-          recognitionRef.current.lang = language === 'en' ? 'en-US' : 'ar-MA';
+          recognitionRef.current.lang = getSpeechLanguage();
 
           recognitionRef.current.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript;
