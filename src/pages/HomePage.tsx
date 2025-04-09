@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, User, Tag as TagIcon, Search as SearchIcon, Import, FileText, Home, Info, Facebook, Mail } from "lucide-react";
+import {
+  Menu,
+  User,
+  Tag as TagIcon,
+  Search as SearchIcon,
+  Import,
+  FileText,
+  Home,
+  Info,
+  Facebook,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -41,25 +52,25 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  
+
   const [, setRenderKey] = useState(0);
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
-  
+
   useEffect(() => {
     const handleLanguageChange = () => {
-      setRenderKey(prev => prev + 1);
+      setRenderKey((prev) => prev + 1);
     };
-    
-    window.addEventListener('languageChanged', handleLanguageChange);
+
+    window.addEventListener("languageChanged", handleLanguageChange);
     return () => {
-      window.removeEventListener('languageChanged', handleLanguageChange);
+      window.removeEventListener("languageChanged", handleLanguageChange);
     };
   }, []);
-  
+
   useEffect(() => {
     if (searchQuery.trim()) {
       const normalizedQuery = removeAccents(searchQuery.toLowerCase());
-      
+
       setFilteredContacts(
         contacts.filter((contact) =>
           contact.tags.some((tag) => {
@@ -88,7 +99,9 @@ const HomePage: React.FC = () => {
 
   const handleHome = () => {
     setSearchQuery("");
-    const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+    const searchInput = document.querySelector(
+      'input[type="search"]'
+    ) as HTMLInputElement;
     if (searchInput) {
       searchInput.value = "";
     }
@@ -106,14 +119,16 @@ const HomePage: React.FC = () => {
 
     const dataToExport = {
       contacts: contacts,
-      exportDate: new Date().toISOString()
+      exportDate: new Date().toISOString(),
     };
 
-    const filename = `piston-contacts-${new Date().toISOString().split("T")[0]}.json`;
-    
+    const filename = `piston-contacts-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+
     await exportJsonToFile(
-      dataToExport, 
-      filename, 
+      dataToExport,
+      filename,
       `${contacts.length} ${t("contactsExported")}`,
       t("exportError") || "Export failed"
     );
@@ -134,19 +149,26 @@ const HomePage: React.FC = () => {
       try {
         const content = e.target?.result as string;
         const importedData = JSON.parse(content);
-        
-        if (!importedData || !importedData.contacts || !Array.isArray(importedData.contacts)) {
+
+        if (
+          !importedData ||
+          !importedData.contacts ||
+          !Array.isArray(importedData.contacts)
+        ) {
           throw new Error("Invalid file format");
         }
-        
-        const validContacts = importedData.contacts.filter((contact: any) => 
-          contact && typeof contact.name === "string" && Array.isArray(contact.tags)
+
+        const validContacts = importedData.contacts.filter(
+          (contact: any) =>
+            contact &&
+            typeof contact.name === "string" &&
+            Array.isArray(contact.tags)
         );
-        
+
         if (validContacts.length === 0) {
           throw new Error("No valid contacts found in the file");
         }
-        
+
         let importedCount = 0;
         validContacts.forEach((contact: Omit<Contact, "id">) => {
           try {
@@ -156,23 +178,26 @@ const HomePage: React.FC = () => {
             console.error("Error importing contact:", error);
           }
         });
-        
+
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-        
+
         toast.success(`${importedCount} contacts imported successfully`);
-        
       } catch (error) {
         console.error("Import error:", error);
-        toast.error(`Import failed: ${error instanceof Error ? error.message : "Invalid file format"}`);
-        
+        toast.error(
+          `Import failed: ${
+            error instanceof Error ? error.message : "Invalid file format"
+          }`
+        );
+
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
       }
     };
-    
+
     reader.readAsText(file);
   };
 
@@ -189,8 +214,8 @@ const HomePage: React.FC = () => {
         onChange={handleFileChange}
         className="hidden"
       />
-      <Header 
-        title={getAppTitle()} 
+      <Header
+        title={getAppTitle()}
         centerTitle={true}
         leftElement={
           !isHomePage && (
@@ -217,7 +242,10 @@ const HomePage: React.FC = () => {
                 <Menu className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-popover border border-border">
+            <DropdownMenuContent
+              align="end"
+              className="bg-popover border border-border"
+            >
               <DropdownMenuItem onClick={handleAddContact}>
                 <User className="h-4 w-4 mr-2" />
                 {t("newContact")}
@@ -246,7 +274,7 @@ const HomePage: React.FC = () => {
       />
 
       <div className="px-4 py-3">
-        <ServiceSearchBar 
+        <ServiceSearchBar
           placeholder={t("searchByServiceOrTag")}
           onSearch={handleSearch}
           autoFocus
@@ -259,7 +287,11 @@ const HomePage: React.FC = () => {
             {filteredContacts.length > 0 ? (
               <div className="space-y-3 animate-fade-in">
                 <p className="text-sm text-muted-foreground">
-                  {filteredContacts.length} {filteredContacts.length === 1 ? t("contactFound") : t("contactsFound")} "{searchQuery}" {t("searchingServices")}
+                  {filteredContacts.length}{" "}
+                  {filteredContacts.length === 1
+                    ? t("contactFound")
+                    : t("contactsFound")}{" "}
+                  "{searchQuery}" {t("searchingServices")}
                 </p>
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
@@ -271,7 +303,9 @@ const HomePage: React.FC = () => {
               <EmptyState
                 icon={<SearchIcon className="h-12 w-12 opacity-20" />}
                 title={t("noContactsFound")}
-                description={`${t("noContactsWithService")} "${searchQuery}" ${t("wereFound")}.`}
+                description={`${t(
+                  "noContactsWithService"
+                )} "${searchQuery}" ${t("wereFound")}.`}
                 action={
                   <Button onClick={handleAddContact} className="gap-2">
                     <User className="h-4 w-4" />
@@ -313,7 +347,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <AlertDialogTitle className="text-center text-xl">
-              {language === "en" ? "Backdoor" : "Piston"} v.1.0
+              {language === "en" ? "Backdoor" : "Piston"} v.2.0
             </AlertDialogTitle>
             <div className="py-4 text-center">
               {t("developedBy")} Mahfoud Bouziri
@@ -321,16 +355,16 @@ const HomePage: React.FC = () => {
           </AlertDialogHeader>
           <div className="flex items-center justify-between mt-8">
             <div className="flex items-center space-x-2">
-              <a 
-                href="https://facebook.com/zirisdeveloper" 
-                target="_blank" 
+              <a
+                href="https://facebook.com/zirisdeveloper"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-full hover:bg-accent transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a 
+              <a
                 href="mailto:zirisdeveloper@gmail.com"
                 className="p-2 rounded-full hover:bg-accent transition-colors"
                 aria-label="Email"
@@ -338,7 +372,9 @@ const HomePage: React.FC = () => {
                 <Mail className="h-5 w-5" />
               </a>
             </div>
-            <span className="text-sm text-muted-foreground">copyright zirisdeveloper</span>
+            <span className="text-sm text-muted-foreground">
+              copyright zirisdeveloper
+            </span>
           </div>
           <AlertDialogFooter>
             <AlertDialogAction>{t("close")}</AlertDialogAction>
