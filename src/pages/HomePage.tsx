@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import { Contact } from "@/types";
 import { toast } from "sonner";
 import { exportJsonToFile } from "@/utils/fileSystem";
+import AppIconSvg from "@/components/AppIconSvg";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -306,6 +307,11 @@ const HomePage: React.FC = () => {
       <AlertDialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
+            <div className="mx-auto mb-6">
+              <div className="w-20 h-20 mx-auto">
+                <AppIconSvg className="w-full h-full" />
+              </div>
+            </div>
             <AlertDialogTitle className="text-center text-xl">
               {language === "en" ? "Backdoor" : "Piston"} v.1.0
             </AlertDialogTitle>

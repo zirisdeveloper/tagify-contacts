@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import AppIconSvg from "@/components/AppIconSvg";
 
 const NotFound = () => {
   const location = useLocation();
@@ -33,6 +34,11 @@ const NotFound = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
       <div className="text-center max-w-md mx-auto animate-fade-in">
+        <div className="mb-6">
+          <div className="w-24 h-24 mx-auto">
+            <AppIconSvg className="w-full h-full" />
+          </div>
+        </div>
         <h1 className="text-7xl font-bold mb-4 text-primary">404</h1>
         <p className="text-xl text-foreground mb-6">{t("pageNotFound")}</p>
         <p className="text-muted-foreground mb-8">
