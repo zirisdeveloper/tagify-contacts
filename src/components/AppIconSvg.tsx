@@ -12,15 +12,23 @@ const AppIconSvg: React.FC<AppIconSvgProps> = ({ className }) => {
       className={className}
       aria-hidden="true"
     >
-      {/* This SVG will be replaced by the uploaded image in the native app,
-          but we're keeping the SVG version for web display */}
-      <rect width="200" height="200" fill="#0B5681" />
-      <circle cx="100" cy="100" r="80" fill="none" stroke="#FFFFFF" strokeWidth="8" />
-      <circle cx="100" cy="100" r="65" fill="none" stroke="#FFFFFF" strokeWidth="4" />
-      <circle cx="100" cy="70" r="20" fill="#FFFFFF" />
-      <path d="M70,115 L130,115 Q140,115 140,125 L140,145 L60,145 L60,125 Q60,115 70,115" fill="#FFFFFF" />
-      <path d="M100,90 L100,145" stroke="#0B5681" strokeWidth="6" />
-      <path d="M100,90 L100,105 L110,115 L90,115 Z" fill="#0B5681" />
+      {/* Blue background circle */}
+      <circle cx="100" cy="100" r="100" fill="#0C5075" />
+      
+      {/* Outer white circle */}
+      <circle cx="100" cy="100" r="85" fill="none" stroke="#FFFFFF" strokeWidth="8" />
+      
+      {/* Inner white circle */}
+      <circle cx="100" cy="100" r="70" fill="none" stroke="#FFFFFF" strokeWidth="6" />
+      
+      {/* Person head */}
+      <circle cx="100" cy="75" r="25" fill="#FFFFFF" />
+      
+      {/* Person body */}
+      <path d="M60,130 C60,105 140,105 140,130 L140,155 L60,155 Z" fill="#FFFFFF" />
+      
+      {/* Person tie */}
+      <path d="M100,100 L110,115 L100,150 L90,115 Z" fill="#0C5075" />
     </svg>
   );
 };
