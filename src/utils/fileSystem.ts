@@ -1,5 +1,18 @@
 
 import { toast } from "sonner";
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+
+/**
+ * Checks if the app is running on a mobile device
+ * @returns boolean indicating if the app is running on mobile
+ */
+const isMobileDevice = (): boolean => {
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) || window.matchMedia('(max-width: 767px)').matches
+  );
+};
 
 /**
  * Exports JSON data to a file and allows folder selection where supported
@@ -17,21 +30,43 @@ export const exportJsonToFile = async (
 ): Promise<void> => {
   try {
     const jsonString = JSON.stringify(data, null, 2);
+    
+    // Check if running on mobile with Capacitor
+    if (isMobileDevice() && 'Capacitor' in window) {
+      try {
+        // Use Capacitor's Filesystem API for mobile devices
+        // Default to Downloads directory
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: jsonString,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8,
+          recursive: true,
+        });
+
+        console.log('File written successfully with Capacitor:', result);
+        toast.success(successMessage);
+        return;
+      } catch (err) {
+        console.error('Capacitor filesystem error:', err);
+        // Fall back to browser methods if Capacitor fails
+      }
+    }
+    
+    // For desktop browsers or as fallback for mobile
     const blob = new Blob([jsonString], { type: "application/json" });
     
     // Check if the File System Access API is available (modern browsers)
     if ('showSaveFilePicker' in window) {
       try {
-        // Set default directory to Downloads folder if possible
-        // Note: Most browsers don't allow specifying the default directory due to security reasons
+        // Try to set default directory to Downloads folder 
         const fileHandle = await (window as any).showSaveFilePicker({
           suggestedName: filename,
           types: [{
             description: 'JSON File',
             accept: { 'application/json': ['.json'] },
           }],
-          // This is where folder selection happens - the dialog will open
-          // and user can navigate to any folder they want
+          // This opens the file dialog so user can navigate to any folder they want
         });
         
         // Once user selects a location, write the file there
@@ -83,4 +118,3 @@ const fallbackDownload = (blob: Blob, filename: string, successMessage: string):
   
   toast.success(successMessage);
 };
-
