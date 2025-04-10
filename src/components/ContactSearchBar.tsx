@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Search, X, Mic, MicOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -45,6 +44,7 @@ const ContactSearchBar: React.FC<ContactSearchBarProps> = ({
     }
   }, [autoFocus]);
 
+  // Update speech recognition when language changes
   useEffect(() => {
     // Clean up the previous recognition instance
     if (recognitionRef.current) {

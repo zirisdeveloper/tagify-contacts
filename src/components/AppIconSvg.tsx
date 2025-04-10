@@ -12,6 +12,8 @@ const AppIconSvg: React.FC<AppIconSvgProps> = ({ className }) => {
       className={className}
       aria-hidden="true"
     >
+      {/* This SVG will be replaced by the uploaded image in the native app,
+          but we're keeping the SVG version for web display */}
       <rect width="200" height="200" fill="#0B5681" />
       <circle cx="100" cy="100" r="80" fill="none" stroke="#FFFFFF" strokeWidth="8" />
       <circle cx="100" cy="100" r="65" fill="none" stroke="#FFFFFF" strokeWidth="4" />
