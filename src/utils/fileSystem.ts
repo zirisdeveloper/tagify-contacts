@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Dialog } from '@capacitor/dialog';
 
 /**
  * Checks if the app is running on a mobile device
@@ -12,6 +13,52 @@ const isMobileDevice = (): boolean => {
       navigator.userAgent
     ) || window.matchMedia('(max-width: 767px)').matches
   );
+};
+
+/**
+ * Available storage locations for mobile exports
+ */
+const storageOptions = [
+  { name: 'Downloads', directory: Directory.Downloads },
+  { name: 'Documents', directory: Directory.Documents },
+  { name: 'External Storage', directory: Directory.External },
+  { name: 'Data Directory', directory: Directory.Data }
+];
+
+/**
+ * Shows a dialog to select a storage location on mobile
+ * @returns Promise resolving to the selected directory or null if cancelled
+ */
+const selectStorageLocation = async (): Promise<Directory | null> => {
+  if (!isMobileDevice() || !('Capacitor' in window)) {
+    return null;
+  }
+  
+  try {
+    // Build the options string
+    const optionsText = storageOptions.map((option, index) => 
+      `${index + 1}. ${option.name}`
+    ).join('\n');
+    
+    const { value } = await Dialog.prompt({
+      title: 'Select Storage Location',
+      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use Downloads folder.`,
+      inputPlaceholder: 'Enter number (1-4)',
+      okButtonTitle: 'Select',
+      cancelButtonTitle: 'Use Downloads'
+    });
+    
+    const selectedIndex = parseInt(value, 10);
+    if (!isNaN(selectedIndex) && selectedIndex >= 1 && selectedIndex <= storageOptions.length) {
+      return storageOptions[selectedIndex - 1].directory;
+    }
+    
+    // Default to Downloads if invalid input or cancelled
+    return Directory.Downloads;
+  } catch (error) {
+    console.log('Dialog cancelled, using Downloads folder', error);
+    return Directory.Downloads;
+  }
 };
 
 /**
@@ -34,19 +81,29 @@ export const exportJsonToFile = async (
     // Check if running on mobile with Capacitor
     if (isMobileDevice() && 'Capacitor' in window) {
       try {
-        // Use Capacitor's Filesystem API for mobile devices
-        // Default to Downloads directory
-        const result = await Filesystem.writeFile({
-          path: filename,
-          data: jsonString,
-          directory: Directory.Documents,
-          encoding: Encoding.UTF8,
-          recursive: true,
-        });
+        // Show location selection dialog
+        const selectedDirectory = await selectStorageLocation();
+        
+        if (selectedDirectory) {
+          // Use Capacitor's Filesystem API for mobile devices
+          const result = await Filesystem.writeFile({
+            path: filename,
+            data: jsonString,
+            directory: selectedDirectory,
+            encoding: Encoding.UTF8,
+            recursive: true,
+          });
+          
+          let locationMessage = '';
+          const dirOption = storageOptions.find(opt => opt.directory === selectedDirectory);
+          if (dirOption) {
+            locationMessage = ` to ${dirOption.name}`;
+          }
 
-        console.log('File written successfully with Capacitor:', result);
-        toast.success(successMessage);
-        return;
+          console.log('File written successfully with Capacitor:', result);
+          toast.success(`${successMessage}${locationMessage}`);
+          return;
+        }
       } catch (err) {
         console.error('Capacitor filesystem error:', err);
         // Fall back to browser methods if Capacitor fails
