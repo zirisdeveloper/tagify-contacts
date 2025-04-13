@@ -105,29 +105,25 @@ export const exportJsonToFile = async (
     // Check if running on mobile with Capacitor
     if (isMobileDevice() && 'Capacitor' in window) {
       try {
-        // Show location selection dialog
-        const selectedDirectory = await selectStorageLocation();
+        // Get the preferred storage location without asking
+        const preferredDirectory = getPreferredStorageLocation();
         
-        if (selectedDirectory) {
-          // Use Capacitor's Filesystem API for mobile devices
-          const result = await Filesystem.writeFile({
-            path: filename,
-            data: jsonString,
-            directory: selectedDirectory,
-            encoding: Encoding.UTF8,
-            recursive: true,
-          });
-          
-          let locationMessage = '';
-          const dirOption = storageOptions.find(opt => opt.directory === selectedDirectory);
-          if (dirOption) {
-            locationMessage = ` to ${dirOption.name}`;
-          }
+        // Use Capacitor's Filesystem API for mobile devices
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: jsonString,
+          directory: preferredDirectory,
+          encoding: Encoding.UTF8,
+          recursive: true,
+        });
+        
+        // Find the directory name for the success message
+        const directoryOption = storageOptions.find(opt => opt.directory === preferredDirectory);
+        const locationMessage = directoryOption ? ` to ${directoryOption.name}` : '';
 
-          console.log('File written successfully with Capacitor:', result);
-          toast.success(`${successMessage}${locationMessage}`);
-          return;
-        }
+        console.log('File written successfully with Capacitor:', result);
+        toast.success(`${successMessage}${locationMessage}`);
+        return;
       } catch (err) {
         console.error('Capacitor filesystem error:', err);
         // Fall back to browser methods if Capacitor fails
