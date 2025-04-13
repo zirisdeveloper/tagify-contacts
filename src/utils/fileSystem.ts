@@ -19,11 +19,30 @@ const isMobileDevice = (): boolean => {
  * Available storage locations for mobile exports
  */
 const storageOptions = [
-  { name: 'Documents', directory: Directory.Documents },
-  { name: 'External Storage', directory: Directory.External },
-  { name: 'Cache Directory', directory: Directory.Cache },
-  { name: 'Data Directory', directory: Directory.Data }
+  { name: 'Documents', directory: Directory.Documents, key: 'documents' },
+  { name: 'External Storage', directory: Directory.External, key: 'external' },
+  { name: 'Cache Directory', directory: Directory.Cache, key: 'cache' },
+  { name: 'Data Directory', directory: Directory.Data, key: 'data' }
 ];
+
+/**
+ * Gets the user's preferred storage location or returns default
+ * @returns Directory to use for file storage
+ */
+const getPreferredStorageLocation = (): Directory => {
+  const savedPreference = localStorage.getItem('preferredStorageLocation');
+  
+  if (savedPreference) {
+    // Find the matching directory from preferences
+    const option = storageOptions.find(opt => opt.key === savedPreference);
+    if (option) {
+      return option.directory;
+    }
+  }
+  
+  // Default to Documents
+  return Directory.Documents;
+};
 
 /**
  * Shows a dialog to select a storage location on mobile
@@ -40,12 +59,17 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
       `${index + 1}. ${option.name}`
     ).join('\n');
     
+    // Get the default directory name
+    const preferredDirectory = getPreferredStorageLocation();
+    const defaultOption = storageOptions.find(opt => opt.directory === preferredDirectory);
+    const defaultName = defaultOption ? defaultOption.name : 'Documents';
+    
     const { value } = await Dialog.prompt({
       title: 'Select Storage Location',
-      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use Documents folder.`,
+      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use ${defaultName} folder.`,
       inputPlaceholder: 'Enter number (1-4)',
       okButtonTitle: 'Select',
-      cancelButtonTitle: 'Use Documents'
+      cancelButtonTitle: `Use ${defaultName}`
     });
     
     const selectedIndex = parseInt(value, 10);
@@ -53,11 +77,11 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
       return storageOptions[selectedIndex - 1].directory;
     }
     
-    // Default to Documents if invalid input or cancelled
-    return Directory.Documents;
+    // Default to preferred location if invalid input or cancelled
+    return getPreferredStorageLocation();
   } catch (error) {
-    console.log('Dialog cancelled, using Documents folder', error);
-    return Directory.Documents;
+    console.log('Dialog cancelled, using preferred folder', error);
+    return getPreferredStorageLocation();
   }
 };
 
@@ -81,29 +105,25 @@ export const exportJsonToFile = async (
     // Check if running on mobile with Capacitor
     if (isMobileDevice() && 'Capacitor' in window) {
       try {
-        // Show location selection dialog
-        const selectedDirectory = await selectStorageLocation();
+        // Get the preferred storage location without asking
+        const preferredDirectory = getPreferredStorageLocation();
         
-        if (selectedDirectory) {
-          // Use Capacitor's Filesystem API for mobile devices
-          const result = await Filesystem.writeFile({
-            path: filename,
-            data: jsonString,
-            directory: selectedDirectory,
-            encoding: Encoding.UTF8,
-            recursive: true,
-          });
-          
-          let locationMessage = '';
-          const dirOption = storageOptions.find(opt => opt.directory === selectedDirectory);
-          if (dirOption) {
-            locationMessage = ` to ${dirOption.name}`;
-          }
+        // Use Capacitor's Filesystem API for mobile devices
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: jsonString,
+          directory: preferredDirectory,
+          encoding: Encoding.UTF8,
+          recursive: true,
+        });
+        
+        // Find the directory name for the success message
+        const directoryOption = storageOptions.find(opt => opt.directory === preferredDirectory);
+        const locationMessage = directoryOption ? ` to ${directoryOption.name}` : '';
 
-          console.log('File written successfully with Capacitor:', result);
-          toast.success(`${successMessage}${locationMessage}`);
-          return;
-        }
+        console.log('File written successfully with Capacitor:', result);
+        toast.success(`${successMessage}${locationMessage}`);
+        return;
       } catch (err) {
         console.error('Capacitor filesystem error:', err);
         // Fall back to browser methods if Capacitor fails

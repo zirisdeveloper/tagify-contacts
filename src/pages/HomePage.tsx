@@ -11,6 +11,7 @@ import {
   Info,
   Facebook,
   Mail,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useContacts } from "@/context/ContactContext";
@@ -264,6 +265,10 @@ const HomePage: React.FC = () => {
                 {t("importContacts")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/parameters')}>
+                <Settings className="h-4 w-4 mr-2" />
+                {t("parameters")}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleAboutClick}>
                 <Info className="h-4 w-4 mr-2" />
                 {t("about")}
