@@ -19,9 +19,9 @@ const isMobileDevice = (): boolean => {
  * Available storage locations for mobile exports
  */
 const storageOptions = [
-  { name: 'Downloads', directory: Directory.Downloads },
   { name: 'Documents', directory: Directory.Documents },
   { name: 'External Storage', directory: Directory.External },
+  { name: 'Cache Directory', directory: Directory.Cache },
   { name: 'Data Directory', directory: Directory.Data }
 ];
 
@@ -42,10 +42,10 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
     
     const { value } = await Dialog.prompt({
       title: 'Select Storage Location',
-      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use Downloads folder.`,
+      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use Documents folder.`,
       inputPlaceholder: 'Enter number (1-4)',
       okButtonTitle: 'Select',
-      cancelButtonTitle: 'Use Downloads'
+      cancelButtonTitle: 'Use Documents'
     });
     
     const selectedIndex = parseInt(value, 10);
@@ -53,11 +53,11 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
       return storageOptions[selectedIndex - 1].directory;
     }
     
-    // Default to Downloads if invalid input or cancelled
-    return Directory.Downloads;
+    // Default to Documents if invalid input or cancelled
+    return Directory.Documents;
   } catch (error) {
-    console.log('Dialog cancelled, using Downloads folder', error);
-    return Directory.Downloads;
+    console.log('Dialog cancelled, using Documents folder', error);
+    return Directory.Documents;
   }
 };
 
