@@ -41,7 +41,7 @@ const ParametersPage: React.FC = () => {
     
     // Find the name of the selected storage for the toast message
     const selectedOption = storageOptions.find(option => option.key === value);
-    toast.success(t("storageSaved", { storage: selectedOption?.name || '' }));
+    toast.success(t("storageSaved", { storage: selectedOption?.name }));
   };
 
   return (

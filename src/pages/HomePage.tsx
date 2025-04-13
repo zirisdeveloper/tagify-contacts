@@ -352,7 +352,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <AlertDialogTitle className="text-center text-xl">
-              {language === "en" ? "Backdoor" : "Piston"} v.2.0
+              {language === "en" ? "Backdoor" : "Piston"} v.2.1
             </AlertDialogTitle>
             <div className="py-4 text-center">
               {t("developedBy")} Mahfoud Bouziri
