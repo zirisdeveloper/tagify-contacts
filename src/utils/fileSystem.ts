@@ -19,11 +19,30 @@ const isMobileDevice = (): boolean => {
  * Available storage locations for mobile exports
  */
 const storageOptions = [
-  { name: 'Documents', directory: Directory.Documents },
-  { name: 'External Storage', directory: Directory.External },
-  { name: 'Cache Directory', directory: Directory.Cache },
-  { name: 'Data Directory', directory: Directory.Data }
+  { name: 'Documents', directory: Directory.Documents, key: 'documents' },
+  { name: 'External Storage', directory: Directory.External, key: 'external' },
+  { name: 'Cache Directory', directory: Directory.Cache, key: 'cache' },
+  { name: 'Data Directory', directory: Directory.Data, key: 'data' }
 ];
+
+/**
+ * Gets the user's preferred storage location or returns default
+ * @returns Directory to use for file storage
+ */
+const getPreferredStorageLocation = (): Directory => {
+  const savedPreference = localStorage.getItem('preferredStorageLocation');
+  
+  if (savedPreference) {
+    // Find the matching directory from preferences
+    const option = storageOptions.find(opt => opt.key === savedPreference);
+    if (option) {
+      return option.directory;
+    }
+  }
+  
+  // Default to Documents
+  return Directory.Documents;
+};
 
 /**
  * Shows a dialog to select a storage location on mobile
@@ -40,12 +59,17 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
       `${index + 1}. ${option.name}`
     ).join('\n');
     
+    // Get the default directory name
+    const preferredDirectory = getPreferredStorageLocation();
+    const defaultOption = storageOptions.find(opt => opt.directory === preferredDirectory);
+    const defaultName = defaultOption ? defaultOption.name : 'Documents';
+    
     const { value } = await Dialog.prompt({
       title: 'Select Storage Location',
-      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use Documents folder.`,
+      message: `Choose where to save your file:\n${optionsText}\n\nPress Cancel to use ${defaultName} folder.`,
       inputPlaceholder: 'Enter number (1-4)',
       okButtonTitle: 'Select',
-      cancelButtonTitle: 'Use Documents'
+      cancelButtonTitle: `Use ${defaultName}`
     });
     
     const selectedIndex = parseInt(value, 10);
@@ -53,11 +77,11 @@ const selectStorageLocation = async (): Promise<Directory | null> => {
       return storageOptions[selectedIndex - 1].directory;
     }
     
-    // Default to Documents if invalid input or cancelled
-    return Directory.Documents;
+    // Default to preferred location if invalid input or cancelled
+    return getPreferredStorageLocation();
   } catch (error) {
-    console.log('Dialog cancelled, using Documents folder', error);
-    return Directory.Documents;
+    console.log('Dialog cancelled, using preferred folder', error);
+    return getPreferredStorageLocation();
   }
 };
 
