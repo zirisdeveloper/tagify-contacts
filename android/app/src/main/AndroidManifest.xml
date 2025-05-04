@@ -23,11 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Add intent filter for viewing JSON files -->
+            <!-- Support opening any file type -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="application/json" />
+                <data android:mimeType="*/*" />
             </intent-filter>
             
         </activity>
