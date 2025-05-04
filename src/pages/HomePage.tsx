@@ -137,6 +137,8 @@ const HomePage: React.FC = () => {
 
   const handleImportClick = () => {
     if (fileInputRef.current) {
+      // Reset the file input value before showing the picker
+      fileInputRef.current.value = "";
       fileInputRef.current.click();
     }
   };
@@ -144,6 +146,15 @@ const HomePage: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Check if file is a JSON file explicitly
+    if (file.type !== "application/json" && !file.name.toLowerCase().endsWith('.json')) {
+      toast.error(t("invalidFileFormat"));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
