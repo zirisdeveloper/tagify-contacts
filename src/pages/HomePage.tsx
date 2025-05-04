@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -147,9 +148,12 @@ const HomePage: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check if file is a JSON file explicitly
-    if (file.type !== "application/json" && !file.name.toLowerCase().endsWith('.json')) {
+    console.log("Selected file:", file.name, "Type:", file.type);
+    
+    // Less restrictive check - just make sure filename ends with .json
+    if (!file.name.toLowerCase().endsWith('.json')) {
       toast.error(t("invalidFileFormat"));
+      console.log("File rejected: not a JSON file");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -222,7 +226,7 @@ const HomePage: React.FC = () => {
       <input
         type="file"
         ref={fileInputRef}
-        accept="application/json,.json"
+        accept=".json,application/json"
         onChange={handleFileChange}
         className="hidden"
       />

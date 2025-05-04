@@ -40,7 +40,10 @@ const getPreferredStorageLocation = (): Directory => {
     }
   }
   
-  // Default to Documents
+  // Default to External storage on Android, Documents elsewhere
+  if (/Android/i.test(navigator.userAgent)) {
+    return Directory.External; 
+  }
   return Directory.Documents;
 };
 
