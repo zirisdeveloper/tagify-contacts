@@ -184,12 +184,12 @@ const HomePage: React.FC = () => {
           fileInputRef.current.value = "";
         }
 
-        toast.success(`${importedCount} contacts imported successfully`);
+        toast.success(`${importedCount} ${t("contactsImported")}`);
       } catch (error) {
         console.error("Import error:", error);
         toast.error(
-          `Import failed: ${
-            error instanceof Error ? error.message : "Invalid file format"
+          `${t("importFailed")}: ${
+            error instanceof Error ? error.message : t("invalidFileFormat")
           }`
         );
 
@@ -211,7 +211,7 @@ const HomePage: React.FC = () => {
       <input
         type="file"
         ref={fileInputRef}
-        accept=".json"
+        accept="application/json,.json"
         onChange={handleFileChange}
         className="hidden"
       />
