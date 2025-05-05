@@ -147,13 +147,16 @@ const HomePage: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log("Selected file:", file.name, "Type:", file.type);
+    console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     
-    // Remove strict extension check - try to parse any selected file
+    // No extension check - try to parse any selected file
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
+        console.log("File content length:", content.length);
+        
+        // Try to parse as JSON regardless of extension
         const importedData = JSON.parse(content);
 
         if (
@@ -163,6 +166,8 @@ const HomePage: React.FC = () => {
         ) {
           throw new Error("Invalid file format");
         }
+
+        console.log("Found contacts array with", importedData.contacts.length, "items");
 
         const validContacts = importedData.contacts.filter(
           (contact: any) =>
