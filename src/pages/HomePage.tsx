@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -39,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -143,81 +145,184 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     console.log("Selected file:", file.name, "Type:", file.type, "Size:", file.size);
     
-    // No extension check - try to parse any selected file
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        console.log("File content length:", content.length);
-        
-        // Try to parse as JSON regardless of extension
-        const importedData = JSON.parse(content);
+    // First try with Web File API
+    try {
+      // Create a URL for the selected file
+      const fileURL = URL.createObjectURL(file);
+      console.log("Created URL for file:", fileURL);
+      
+      // Read the file content
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          console.log("File content length:", content.length);
+          
+          // Try to parse as JSON regardless of extension
+          const importedData = JSON.parse(content);
 
-        if (
-          !importedData ||
-          !importedData.contacts ||
-          !Array.isArray(importedData.contacts)
-        ) {
-          throw new Error("Invalid file format");
-        }
-
-        console.log("Found contacts array with", importedData.contacts.length, "items");
-
-        const validContacts = importedData.contacts.filter(
-          (contact: any) =>
-            contact &&
-            typeof contact.name === "string" &&
-            Array.isArray(contact.tags)
-        );
-
-        if (validContacts.length === 0) {
-          throw new Error("No valid contacts found in the file");
-        }
-
-        let importedCount = 0;
-        validContacts.forEach((contact: Omit<Contact, "id">) => {
-          try {
-            addContact(contact);
-            importedCount++;
-          } catch (error) {
-            console.error("Error importing contact:", error);
+          if (
+            !importedData ||
+            !importedData.contacts ||
+            !Array.isArray(importedData.contacts)
+          ) {
+            throw new Error("Invalid file format");
           }
-        });
 
+          console.log("Found contacts array with", importedData.contacts.length, "items");
+
+          const validContacts = importedData.contacts.filter(
+            (contact: any) =>
+              contact &&
+              typeof contact.name === "string" &&
+              Array.isArray(contact.tags)
+          );
+
+          if (validContacts.length === 0) {
+            throw new Error("No valid contacts found in the file");
+          }
+
+          let importedCount = 0;
+          validContacts.forEach((contact: Omit<Contact, "id">) => {
+            try {
+              addContact(contact);
+              importedCount++;
+            } catch (error) {
+              console.error("Error importing contact:", error);
+            }
+          });
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+
+          toast.success(`${importedCount} ${t("contactsImported")}`);
+        } catch (error) {
+          console.error("Import error during parsing:", error);
+          
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          
+          toast.error(
+            `${t("importFailed")}: ${
+              error instanceof Error ? error.message : t("invalidFileFormat")
+            }`
+          );
+        } finally {
+          // Clean up the object URL
+          URL.revokeObjectURL(fileURL);
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error("Error reading file with FileReader:", error);
+        toast.error(t("errorReadingFile"));
+        
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+      };
 
-        toast.success(`${importedCount} ${t("contactsImported")}`);
-      } catch (error) {
-        console.error("Import error:", error);
-        toast.error(
-          `${t("importFailed")}: ${
-            error instanceof Error ? error.message : t("invalidFileFormat")
-          }`
-        );
-
+      // Start reading the file
+      reader.readAsText(file);
+    } catch (webError) {
+      console.error("Web File API error:", webError);
+      
+      // Try Capacitor Filesystem API as fallback for Android
+      if ('Capacitor' in window && file.path) {
+        try {
+          console.log("Trying Capacitor Filesystem for:", file.path);
+          
+          // Try reading with all directory options if path is available
+          const directories = [
+            Directory.Documents,
+            Directory.Data,
+            Directory.Cache,
+            Directory.External
+          ];
+          
+          let fileContent: string | null = null;
+          
+          // Try each directory
+          for (const directory of directories) {
+            try {
+              console.log(`Trying to read from directory: ${directory}`);
+              const result = await Filesystem.readFile({
+                path: file.path,
+                directory: directory,
+                encoding: "utf8"
+              });
+              
+              fileContent = result.data;
+              console.log(`Successfully read file from ${directory}`);
+              break;
+            } catch (dirError) {
+              console.log(`Failed to read from ${directory}:`, dirError);
+            }
+          }
+          
+          if (!fileContent) {
+            throw new Error("Could not read file from any directory");
+          }
+          
+          // Parse the content
+          const importedData = JSON.parse(fileContent);
+          
+          if (!importedData || !importedData.contacts || !Array.isArray(importedData.contacts)) {
+            throw new Error("Invalid file format");
+          }
+          
+          const validContacts = importedData.contacts.filter(
+            (contact: any) =>
+              contact &&
+              typeof contact.name === "string" &&
+              Array.isArray(contact.tags)
+          );
+          
+          if (validContacts.length === 0) {
+            throw new Error("No valid contacts found in the file");
+          }
+          
+          let importedCount = 0;
+          validContacts.forEach((contact: Omit<Contact, "id">) => {
+            try {
+              addContact(contact);
+              importedCount++;
+            } catch (error) {
+              console.error("Error importing contact:", error);
+            }
+          });
+          
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          
+          toast.success(`${importedCount} ${t("contactsImported")}`);
+        } catch (capacitorError) {
+          console.error("Capacitor Filesystem error:", capacitorError);
+          toast.error(`${t("importFailed")}: ${capacitorError instanceof Error ? capacitorError.message : t("capacitorReadError")}`);
+          
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }
+      } else {
+        // No Capacitor or path available
+        toast.error(t("importFailed"));
+        
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
       }
-    };
-
-    reader.onerror = () => {
-      toast.error(t("errorReadingFile"));
-      console.error("Error reading file");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    };
-
-    reader.readAsText(file);
+    }
   };
 
   const getAppTitle = () => {

@@ -198,3 +198,44 @@ const fallbackDownload = (blob: Blob, filename: string, successMessage: string):
   
   toast.success(successMessage);
 };
+
+/**
+ * Reads file content from a path on a mobile device
+ * This function can be used to read files from any location
+ * @param path Path to the file
+ * @param directory Directory where the file is located
+ * @returns Promise resolving to the file content
+ */
+export const readFileFromStorage = async (
+  path: string,
+  directory: Directory = Directory.Documents
+): Promise<string> => {
+  console.log(`Attempting to read file: ${path} from directory: ${directory}`);
+  
+  if (isMobileDevice() && 'Capacitor' in window) {
+    try {
+      // First, check if the file exists
+      const fileInfo = await Filesystem.stat({
+        path,
+        directory
+      });
+      
+      console.log('File exists:', fileInfo);
+      
+      // Read the file if it exists
+      const result = await Filesystem.readFile({
+        path,
+        directory,
+        encoding: Encoding.UTF8
+      });
+      
+      console.log('File read result:', result);
+      return result.data;
+    } catch (err) {
+      console.error('Error reading file with Capacitor:', err);
+      throw new Error(`Failed to read file: ${err}`);
+    }
+  }
+  
+  throw new Error('File reading is only supported on mobile devices');
+};
