@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -161,7 +162,11 @@ const HomePage: React.FC = () => {
       
       reader.onload = (e) => {
         try {
-          const content = e.target?.result as string;
+          const content = e.target?.result;
+          if (!content || typeof content !== 'string') {
+            throw new Error("Failed to read file content");
+          }
+          
           console.log("File content length:", content.length);
           
           // Try to parse as JSON regardless of extension
@@ -254,7 +259,12 @@ const HomePage: React.FC = () => {
                 throw new Error("Failed to read file content");
               }
               
-              const base64Data = e.target.result.toString().split(',')[1];
+              const result = e.target.result;
+              if (typeof result !== 'string') {
+                throw new Error("Invalid file content format");
+              }
+              
+              const base64Data = result.split(',')[1];
               const tempFileName = `temp_import_${Date.now()}.json`;
               
               console.log("Saving file temporarily to read it");
@@ -270,14 +280,18 @@ const HomePage: React.FC = () => {
               console.log("File saved temporarily, now reading it");
               
               // Step 3: Read the file back
-              const result = await Filesystem.readFile({
+              const fileResult = await Filesystem.readFile({
                 path: tempFileName,
                 directory: Directory.Cache,
                 encoding: Encoding.UTF8
               });
               
               // Step 4: Process the content
-              const fileContent = result.data;
+              const fileContent = fileResult.data;
+              if (typeof fileContent !== 'string') {
+                throw new Error("Invalid file content format");
+              }
+              
               console.log("File content read successfully, length:", fileContent.length);
               
               // Parse the content
