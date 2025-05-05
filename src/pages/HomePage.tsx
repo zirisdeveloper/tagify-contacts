@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -23,7 +22,7 @@ import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
 import { toast } from "sonner";
-import { exportJsonToFile } from "@/utils/fileSystem";
+import { exportJsonToFile, readFileFromAllStorageLocations } from "@/utils/fileSystem";
 import AppIconSvg from "@/components/AppIconSvg";
 import {
   DropdownMenu,
@@ -40,7 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -237,75 +236,113 @@ const HomePage: React.FC = () => {
       console.error("Web File API error:", webError);
       
       // Try Capacitor Filesystem API as fallback for Android
-      if ('Capacitor' in window && file.path) {
+      if ('Capacitor' in window) {
         try {
-          console.log("Trying Capacitor Filesystem for:", file.path);
+          console.log("Trying Capacitor Filesystem for file:", file.name);
           
-          // Try reading with all directory options if path is available
-          const directories = [
-            Directory.Documents,
-            Directory.Data,
-            Directory.Cache,
-            Directory.External
-          ];
+          // For Android 10+ we need a different approach
+          // The file object doesn't have a direct path we can use
+          // We will try to save the file first to a known location, then read from there
           
-          let fileContent: string | null = null;
+          // Step 1: Convert file to base64
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
           
-          // Try each directory
-          for (const directory of directories) {
+          reader.onload = async (e) => {
             try {
-              console.log(`Trying to read from directory: ${directory}`);
-              const result = await Filesystem.readFile({
-                path: file.path,
-                directory: directory,
-                encoding: "utf8"
+              if (!e.target?.result) {
+                throw new Error("Failed to read file content");
+              }
+              
+              const base64Data = e.target.result.toString().split(',')[1];
+              const tempFileName = `temp_import_${Date.now()}.json`;
+              
+              console.log("Saving file temporarily to read it");
+              
+              // Step 2: Write the file to Documents directory
+              await Filesystem.writeFile({
+                path: tempFileName,
+                data: base64Data,
+                directory: Directory.Cache,
+                encoding: Encoding.UTF8
               });
               
-              fileContent = result.data;
-              console.log(`Successfully read file from ${directory}`);
-              break;
-            } catch (dirError) {
-              console.log(`Failed to read from ${directory}:`, dirError);
+              console.log("File saved temporarily, now reading it");
+              
+              // Step 3: Read the file back
+              const result = await Filesystem.readFile({
+                path: tempFileName,
+                directory: Directory.Cache,
+                encoding: Encoding.UTF8
+              });
+              
+              // Step 4: Process the content
+              const fileContent = result.data;
+              console.log("File content read successfully, length:", fileContent.length);
+              
+              // Parse the content
+              const importedData = JSON.parse(fileContent);
+              
+              if (!importedData || !importedData.contacts || !Array.isArray(importedData.contacts)) {
+                throw new Error("Invalid file format");
+              }
+              
+              const validContacts = importedData.contacts.filter(
+                (contact: any) =>
+                  contact &&
+                  typeof contact.name === "string" &&
+                  Array.isArray(contact.tags)
+              );
+              
+              if (validContacts.length === 0) {
+                throw new Error("No valid contacts found in the file");
+              }
+              
+              let importedCount = 0;
+              validContacts.forEach((contact: Omit<Contact, "id">) => {
+                try {
+                  addContact(contact);
+                  importedCount++;
+                } catch (error) {
+                  console.error("Error importing contact:", error);
+                }
+              });
+              
+              // Step 5: Clean up temporary file
+              try {
+                await Filesystem.deleteFile({
+                  path: tempFileName,
+                  directory: Directory.Cache
+                });
+                console.log("Temporary file deleted");
+              } catch (deleteErr) {
+                console.log("Failed to delete temporary file:", deleteErr);
+                // Non-critical error, we can still proceed
+              }
+              
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+              
+              toast.success(`${importedCount} ${t("contactsImported")}`);
+            } catch (processingError) {
+              console.error("Error processing file:", processingError);
+              toast.error(`${t("importFailed")}: ${processingError instanceof Error ? processingError.message : t("processingError")}`);
+              
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
             }
-          }
+          };
           
-          if (!fileContent) {
-            throw new Error("Could not read file from any directory");
-          }
-          
-          // Parse the content
-          const importedData = JSON.parse(fileContent);
-          
-          if (!importedData || !importedData.contacts || !Array.isArray(importedData.contacts)) {
-            throw new Error("Invalid file format");
-          }
-          
-          const validContacts = importedData.contacts.filter(
-            (contact: any) =>
-              contact &&
-              typeof contact.name === "string" &&
-              Array.isArray(contact.tags)
-          );
-          
-          if (validContacts.length === 0) {
-            throw new Error("No valid contacts found in the file");
-          }
-          
-          let importedCount = 0;
-          validContacts.forEach((contact: Omit<Contact, "id">) => {
-            try {
-              addContact(contact);
-              importedCount++;
-            } catch (error) {
-              console.error("Error importing contact:", error);
+          reader.onerror = (readerError) => {
+            console.error("Error reading file as base64:", readerError);
+            toast.error(t("errorReadingFile"));
+            
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
             }
-          });
-          
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-          
-          toast.success(`${importedCount} ${t("contactsImported")}`);
+          };
         } catch (capacitorError) {
           console.error("Capacitor Filesystem error:", capacitorError);
           toast.error(`${t("importFailed")}: ${capacitorError instanceof Error ? capacitorError.message : t("capacitorReadError")}`);
@@ -315,7 +352,7 @@ const HomePage: React.FC = () => {
           }
         }
       } else {
-        // No Capacitor or path available
+        // No Capacitor available
         toast.error(t("importFailed"));
         
         if (fileInputRef.current) {

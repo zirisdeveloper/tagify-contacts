@@ -230,11 +230,42 @@ export const readFileFromStorage = async (
       });
       
       console.log('File read result:', result);
-      return result.data;
+      return result.data as string;
     } catch (err) {
       console.error('Error reading file with Capacitor:', err);
       throw new Error(`Failed to read file: ${err}`);
     }
+  }
+  
+  throw new Error('File reading is only supported on mobile devices');
+};
+
+/**
+ * Attempts to read a file from multiple possible storage directories
+ * Useful when you don't know which directory the file is in
+ * @param filename The filename to read
+ * @returns Promise resolving to the file content if found
+ */
+export const readFileFromAllStorageLocations = async (filename: string): Promise<string> => {
+  if (isMobileDevice() && 'Capacitor' in window) {
+    const errors: Error[] = [];
+    
+    // Try each directory in sequence
+    for (const option of storageOptions) {
+      try {
+        console.log(`Trying to read ${filename} from ${option.name}`);
+        const content = await readFileFromStorage(filename, option.directory);
+        console.log(`Successfully read file from ${option.name}`);
+        return content;
+      } catch (err) {
+        console.log(`Failed to read from ${option.name}:`, err);
+        errors.push(err as Error);
+      }
+    }
+    
+    // If we get here, all attempts failed
+    console.error('All read attempts failed:', errors);
+    throw new Error(`Failed to read file from any location`);
   }
   
   throw new Error('File reading is only supported on mobile devices');

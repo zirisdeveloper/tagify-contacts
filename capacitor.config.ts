@@ -14,7 +14,20 @@ const config: CapacitorConfig = {
     }
   },
   android: {
-    useLegacyStorage: true
+    useLegacyStorage: true,
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true,
+    backgroundColor: "#ffffff"
+  },
+  permissions: {
+    // Request all needed permissions
+    READ_EXTERNAL_STORAGE: true,
+    WRITE_EXTERNAL_STORAGE: true,
+    MANAGE_EXTERNAL_STORAGE: true,
+    READ_MEDIA_IMAGES: true,
+    READ_MEDIA_VIDEO: true, 
+    READ_MEDIA_AUDIO: true
   }
 };
 
