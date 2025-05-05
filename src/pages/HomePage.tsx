@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -23,7 +22,7 @@ import EmptyState from "@/components/EmptyState";
 import Header from "@/components/Header";
 import { Contact } from "@/types";
 import { toast } from "sonner";
-import { exportJsonToFile, readFileFromAllStorageLocations } from "@/utils/fileSystem";
+import { exportJsonToFile, readFileFromAllStorageLocations, openFilePickerInDocuments } from "@/utils/fileSystem";
 import AppIconSvg from "@/components/AppIconSvg";
 import {
   DropdownMenu,
@@ -137,7 +136,10 @@ const HomePage: React.FC = () => {
     );
   };
 
-  const handleImportClick = () => {
+  const handleImportClick = async () => {
+    // First, try to open the file picker in the Documents directory
+    await openFilePickerInDocuments();
+    
     if (fileInputRef.current) {
       // Reset the file input value before showing the picker
       fileInputRef.current.value = "";

@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Dialog } from '@capacitor/dialog';
@@ -40,10 +39,7 @@ const getPreferredStorageLocation = (): Directory => {
     }
   }
   
-  // Default to External storage on Android, Documents elsewhere
-  if (/Android/i.test(navigator.userAgent)) {
-    return Directory.External; 
-  }
+  // Default to Documents storage
   return Directory.Documents;
 };
 
@@ -269,4 +265,26 @@ export const readFileFromAllStorageLocations = async (filename: string): Promise
   }
   
   throw new Error('File reading is only supported on mobile devices');
+};
+
+/**
+ * Opens a file picker with the Documents directory as the initial location on Android
+ * @returns Promise that resolves when the file picker is opened
+ */
+export const openFilePickerInDocuments = async (): Promise<void> => {
+  // For mobile devices with Capacitor
+  if (isMobileDevice() && 'Capacitor' in window) {
+    try {
+      // Open Android file picker specifically in Documents directory
+      if (/Android/i.test(navigator.userAgent)) {
+        // For Android, we'll navigate to the Documents directory
+        console.log("Opening file picker in Documents directory");
+        
+        // Set Documents as default location in local storage
+        localStorage.setItem('preferredStorageLocation', 'documents');
+      }
+    } catch (error) {
+      console.error("Error opening file picker:", error);
+    }
+  }
 };

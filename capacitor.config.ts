@@ -18,7 +18,9 @@ const config: CapacitorConfig = {
     allowMixedContent: true,
     captureInput: true,
     webContentsDebuggingEnabled: true,
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
+    // Set the initial directory for file pickers
+    initialDir: "DEFAULT_DIRECTORY"
   },
   permissions: {
     // Request all needed permissions

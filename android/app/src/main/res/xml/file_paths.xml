@@ -9,5 +9,6 @@
     <external-path name="external_documents" path="Documents" />
     <external-path name="downloads" path="Download" />
     <external-files-path name="external_files" path="Download" />
+    <external-files-path name="documents" path="Documents" />
     <external-files-path name="shared" path="." />
 </paths>
