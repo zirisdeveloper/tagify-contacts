@@ -4,11 +4,6 @@ import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     
     // Combine the provided ref with our internal ref
@@ -28,10 +23,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           // Apply multiple style changes to force redraw
           input.style.opacity = '0.99';
           input.style.transform = 'translateZ(0)';
+          input.style.textRendering = 'optimizeSpeed';
           
           setTimeout(() => {
             input.style.opacity = '';
             input.style.transform = '';
+            input.style.textRendering = '';
             input.focus();
             try {
               input.setSelectionRange(cursorPosition, cursorPosition);
@@ -48,44 +45,53 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           // Ensure the element is properly receiving focus
           setTimeout(() => {
             input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Force the cursor to be visible
+            const cursorPosition = input.selectionStart || input.value.length;
+            input.setSelectionRange(cursorPosition, cursorPosition);
           }, 300);
+        }
+      };
+      
+      // Handle keyboard show/hide events
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && /Android/.test(navigator.userAgent)) {
+          setTimeout(() => {
+            // Reapply focus when app becomes visible
+            if (document.activeElement === input) {
+              input.blur();
+              setTimeout(() => input.focus(), 50);
+            }
+          }, 100);
         }
       };
       
       input.addEventListener('input', forceUpdate);
       input.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
       
       return () => {
         input.removeEventListener('input', forceUpdate);
         input.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
     }, []);
 
-<<<<<<< HEAD
->>>>>>> 6aa8ed5... Fix Android keyboard visibility issue
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
     return (
       <input
         ref={inputRef}
         type={type}
         className={cn(
           "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
           // Enhanced fixes for Android WebView visibility issue
           /Android/.test(navigator.userAgent) 
-            ? "will-change-transform translate-z-0 backface-visibility-visible" 
+            ? "will-change-transform backface-visibility-visible user-select-text" 
             : "",
-<<<<<<< HEAD
->>>>>>> 6aa8ed5... Fix Android keyboard visibility issue
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
           className
         )}
+        autoComplete="off"
+        enterKeyHint="done"
+        spellCheck="false"
         {...props}
       />
     )

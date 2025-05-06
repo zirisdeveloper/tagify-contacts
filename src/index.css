@@ -45,6 +45,25 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Android input fixes */
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Fix for Android keyboard visibility */
+  .android-keyboard-fix {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: visible;
+  }
+
+  /* Force proper text rendering on Android */
+  html.android {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   .contact-appear {
     animation: fade-in 0.3s ease-out, scale-in 0.3s ease-out;
   }
@@ -79,5 +98,20 @@
 @layer components {
   .tag {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-all hover:shadow-md;
+  }
+}
+
+/* Add Android platform detection */
+@media all {
+  html:before {
+    content: '';
+    display: none;
+  }
+  
+  /* Apply classes based on platform */
+  html.android input,
+  html.android textarea {
+    caret-color: currentColor !important;
+    opacity: 1 !important;
   }
 }

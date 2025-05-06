@@ -9,18 +9,9 @@
 
     <WebView
         android:layout_width="match_parent"
-<<<<<<< HEAD
-<<<<<<< HEAD
-        android:layout_height="match_parent" />
-=======
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
         android:layout_height="match_parent" 
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:clickable="true" />
-<<<<<<< HEAD
->>>>>>> 6aa8ed5... Fix Android keyboard visibility issue
-=======
->>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
+        android:clickable="true"
+        android:longClickable="true" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

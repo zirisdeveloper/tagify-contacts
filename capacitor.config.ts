@@ -11,6 +11,10 @@ const config: CapacitorConfig = {
     },
     Filesystem: {
       androidPermissions: true
+    },
+    Keyboard: {
+      resize: true,
+      resizeOnFullScreen: true
     }
   },
   android: {
@@ -20,7 +24,9 @@ const config: CapacitorConfig = {
     webContentsDebuggingEnabled: true,
     backgroundColor: "#ffffff",
     // Set the initial directory for file pickers
-    initialDir: "DEFAULT_DIRECTORY"
+    initialDir: "DEFAULT_DIRECTORY",
+    // Android keyboard settings
+    windowSoftInputMode: "adjustResize"
   },
   permissions: {
     // Request all needed permissions
