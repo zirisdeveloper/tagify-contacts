@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Search, User, Phone } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useContacts } from "@/context/ContactContext";
 import { Tag } from "@/types";
 import Header from "@/components/Header";
@@ -23,6 +24,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,11 +53,17 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const AddContactPage: React.FC = () => {
-  const { contacts, addContact } = useContacts();
+  const { contacts, addContact, findContactByName, findContactByPhone } = useContacts();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredContacts, setFilteredContacts] = useState(contacts);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [tagsError, setTagsError] = useState<string | null>(null);
+  
+  // Dialog states for duplicate contacts
+  const [nameDialogOpen, setNameDialogOpen] = useState(false);
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const [duplicateContactId, setDuplicateContactId] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   const form = useForm<FormData>({
@@ -94,12 +119,49 @@ const AddContactPage: React.FC = () => {
     setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
   };
 
+  const checkForDuplicateContact = (data: FormData) => {
+    // Check for duplicate name and family name
+    const existingContactByName = findContactByName(data.name, data.familyName);
+    if (existingContactByName) {
+      setDuplicateContactId(existingContactByName.id);
+      setNameDialogOpen(true);
+      return true;
+    }
+
+    // Check for duplicate phone numbers (if provided)
+    if (data.phoneNumber) {
+      const existingContactByPhone = findContactByPhone(data.phoneNumber);
+      if (existingContactByPhone) {
+        setDuplicateContactId(existingContactByPhone.id);
+        setPhoneDialogOpen(true);
+        return true;
+      }
+    }
+
+    if (data.phoneNumber2) {
+      const existingContactByPhone2 = findContactByPhone(data.phoneNumber2);
+      if (existingContactByPhone2) {
+        setDuplicateContactId(existingContactByPhone2.id);
+        setPhoneDialogOpen(true);
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const onSubmit = (data: FormData) => {
     if (selectedTags.length === 0) {
       setTagsError("At least one tag is required");
       return;
     }
 
+    // Check for duplicates
+    if (checkForDuplicateContact(data)) {
+      return;
+    }
+
+    // If no duplicates, add the contact
     addContact({
       name: data.name,
       familyName: data.familyName,
@@ -108,6 +170,19 @@ const AddContactPage: React.FC = () => {
       tags: selectedTags,
     });
 
+    navigate("/");
+  };
+
+  const handleUpdateExistingContact = () => {
+    if (duplicateContactId) {
+      navigate(`/contact/${duplicateContactId}`);
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setNameDialogOpen(false);
+    setPhoneDialogOpen(false);
+    setDuplicateContactId(null);
     navigate("/");
   };
 
@@ -233,6 +308,38 @@ const AddContactPage: React.FC = () => {
           </Form>
         </div>
       </div>
+
+      {/* Dialog for duplicate name */}
+      <AlertDialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Contact Name</AlertDialogTitle>
+            <AlertDialogDescription>
+              A contact with this name and family name already exists. Would you like to update the existing contact?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelUpdate}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUpdateExistingContact}>Yes, Update</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog for duplicate phone */}
+      <AlertDialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Phone Number</AlertDialogTitle>
+            <AlertDialogDescription>
+              This phone number is already associated with another contact. Would you like to update the existing contact?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelUpdate}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUpdateExistingContact}>Yes, Update</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
