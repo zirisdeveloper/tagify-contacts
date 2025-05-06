@@ -63,6 +63,9 @@ const AddContactPage: React.FC = () => {
   const [nameDialogOpen, setNameDialogOpen] = useState(false);
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
   const [duplicateContactId, setDuplicateContactId] = useState<string | null>(null);
+  
+  // State to track keyboard visibility
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const navigate = useNavigate();
 
@@ -75,6 +78,18 @@ const AddContactPage: React.FC = () => {
       phoneNumber2: "",
     },
   });
+
+  // Add effect to handle keyboard visibility
+  useEffect(() => {
+    // Function to detect if keyboard is visible by checking window height changes
+    const handleResize = () => {
+      const isKeyboard = window.innerHeight < window.outerHeight * 0.8;
+      setIsKeyboardVisible(isKeyboard);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -186,6 +201,17 @@ const AddContactPage: React.FC = () => {
     navigate("/");
   };
 
+  // Helper function to handle input focus
+  const handleInputFocus = () => {
+    // Add small timeout to ensure UI updates after focus
+    setTimeout(() => {
+      window.scrollTo({
+        top: window.pageYOffset + 200,
+        behavior: 'smooth'
+      });
+    }, 300);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header title="Add Contact" showBackButton />
@@ -217,7 +243,7 @@ const AddContactPage: React.FC = () => {
         </div>
       ) : null}
 
-      <div className="p-4 pt-2">
+      <div className="p-4 pt-2 pb-24">
         <div className="rounded-xl bg-white shadow-sm border border-border/40 p-4">
           <h2 className="text-lg font-medium mb-4">New Contact</h2>
 
@@ -230,7 +256,12 @@ const AddContactPage: React.FC = () => {
                   <FormItem>
                     <FormLabel>Name *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter name" />
+                      <Input 
+                        {...field} 
+                        placeholder="Enter name" 
+                        onFocus={handleInputFocus}
+                        autoComplete="off"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -244,7 +275,12 @@ const AddContactPage: React.FC = () => {
                   <FormItem>
                     <FormLabel>Family Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter family name" />
+                      <Input 
+                        {...field} 
+                        placeholder="Enter family name" 
+                        onFocus={handleInputFocus}
+                        autoComplete="off"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -262,6 +298,8 @@ const AddContactPage: React.FC = () => {
                         {...field}
                         placeholder="Enter primary phone number"
                         type="tel"
+                        onFocus={handleInputFocus}
+                        autoComplete="off"
                       />
                     </FormControl>
                     <FormMessage />
@@ -280,6 +318,8 @@ const AddContactPage: React.FC = () => {
                         {...field}
                         placeholder="Enter secondary phone number"
                         type="tel"
+                        onFocus={handleInputFocus}
+                        autoComplete="off"
                       />
                     </FormControl>
                     <FormMessage />
