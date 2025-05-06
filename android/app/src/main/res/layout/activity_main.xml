@@ -8,5 +8,12 @@
 
     <WebView
         android:layout_width="match_parent"
+<<<<<<< HEAD
         android:layout_height="match_parent" />
+=======
+        android:layout_height="match_parent" 
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:clickable="true" />
+>>>>>>> 6aa8ed5... Fix Android keyboard visibility issue
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
