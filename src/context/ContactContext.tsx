@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Contact, Tag } from "../types";
 import { toast } from "sonner";
@@ -18,6 +19,8 @@ interface ContactContextType {
   removeTagFromContact: (contactId: string, tagId: string) => void;
   findContactsByTag: (tagName: string) => Contact[];
   getAllTags: () => Tag[];
+  findContactByName: (name: string, familyName?: string) => Contact | undefined;
+  findContactByPhone: (phoneNumber: string) => Contact | undefined;
 }
 
 const ContactContext = createContext<ContactContextType | undefined>(undefined);
@@ -149,6 +152,26 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return [...tags];
   };
 
+  // New function to find a contact by name and family name
+  const findContactByName = (name: string, familyName?: string): Contact | undefined => {
+    if (!name) return undefined;
+    
+    return contacts.find(contact => 
+      contact.name.toLowerCase() === name.toLowerCase() && 
+      (!familyName || !contact.familyName || contact.familyName.toLowerCase() === familyName.toLowerCase())
+    );
+  };
+
+  // New function to find a contact by phone number (primary or secondary)
+  const findContactByPhone = (phoneNumber: string): Contact | undefined => {
+    if (!phoneNumber) return undefined;
+    
+    return contacts.find(contact => 
+      (contact.phoneNumber && contact.phoneNumber === phoneNumber) || 
+      (contact.phoneNumber2 && contact.phoneNumber2 === phoneNumber)
+    );
+  };
+
   return (
     <ContactContext.Provider
       value={{
@@ -161,6 +184,8 @@ export const ContactProvider: React.FC<{ children: React.ReactNode }> = ({ child
         removeTagFromContact,
         findContactsByTag,
         getAllTags,
+        findContactByName,
+        findContactByPhone,
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,11 +10,17 @@
     <WebView
         android:layout_width="match_parent"
 <<<<<<< HEAD
+<<<<<<< HEAD
         android:layout_height="match_parent" />
 =======
+=======
+>>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
         android:layout_height="match_parent" 
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:clickable="true" />
+<<<<<<< HEAD
 >>>>>>> 6aa8ed5... Fix Android keyboard visibility issue
+=======
+>>>>>>> 6aa8ed567ffdb25705b7a2ec21b3f8c70ba9c848
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
