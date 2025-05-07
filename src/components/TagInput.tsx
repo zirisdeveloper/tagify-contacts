@@ -61,8 +61,8 @@ const TagInput: React.FC<TagInputProps> = ({
   };
 
   const handleAddTag = (e: React.MouseEvent) => {
-    e.stopPropagation();  // Stop event propagation to prevent container click
-    e.preventDefault();   // Prevent form submission
+    e.stopPropagation();
+    e.preventDefault();
     
     if (inputValue.trim()) {
       onAddTag(inputValue.trim());
@@ -112,9 +112,10 @@ const TagInput: React.FC<TagInputProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
-            className="flex-1 outline-none bg-transparent text-sm"
+            className="flex-1 outline-none bg-transparent text-sm border-none"
             placeholder={tags.length === 0 ? placeholder : ""}
             disabled={disabled}
+            autoComplete="off"
           />
           {inputValue && (
             <button

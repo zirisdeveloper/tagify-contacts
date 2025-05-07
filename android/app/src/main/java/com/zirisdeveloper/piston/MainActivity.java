@@ -1,4 +1,3 @@
-
 package com.zirisdeveloper.piston;
 
 import com.getcapacitor.BridgeActivity;
@@ -7,6 +6,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.view.WindowManager;
 import android.view.View;
+import android.content.res.Configuration;
+import android.graphics.Color;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -19,22 +20,42 @@ public class MainActivity extends BridgeActivity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         
-        // These settings help with input rendering
-        webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
+        // Force hardware acceleration for better rendering
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         
-        // Prevent resizing when keyboard shows (prevents layout shifts)
+        // Critical for text input visibility - ADJUST_RESIZE ensures keyboard doesn't cover inputs
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         
-        // Ensure the WebView has focus when keyboard is shown
+        // Force WebView to keep focus when keyboard is shown
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
         webView.requestFocus();
         
-        // Set user agent to desktop mode to improve input behavior
-        String defaultUserAgent = settings.getUserAgentString();
-        settings.setUserAgentString(defaultUserAgent + " DesktopMode");
+        // Enhanced text rendering settings
+        settings.setTextZoom(100);
+        webView.setBackgroundColor(Color.WHITE);
         
-        // Force changes to be rendered
-        webView.setVerticalScrollbarOverlay(true);
-        webView.setHorizontalScrollbarOverlay(true);
+        // Additional advanced settings for better text input
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccess(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        
+        // Use a standard user agent to ensure proper rendering
+        settings.setUserAgentString(null);
+    }
+    
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        
+        // Re-focus WebView when configuration changes (like keyboard visibility)
+        final WebView webView = getBridge().getWebView();
+        webView.post(() -> {
+            webView.requestFocus();
+        });
     }
     
     @Override
