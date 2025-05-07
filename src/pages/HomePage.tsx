@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useContacts } from "@/context/ContactContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 import ServiceSearchBar from "@/components/ServiceSearchBar";
 import HomeHeader from "@/components/HomeHeader";
 import SearchResults from "@/components/SearchResults";
