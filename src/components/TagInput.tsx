@@ -39,6 +39,52 @@ const TagInput: React.FC<TagInputProps> = ({
     };
   }, []);
 
+  // Force input visibility on Android
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input || !(/Android/.test(navigator.userAgent))) return;
+    
+    const forceInputVisibility = () => {
+      // Force redraw by toggling multiple properties
+      input.style.opacity = '0.99';
+      input.style.transform = 'translateZ(0)';
+      
+      setTimeout(() => {
+        input.style.opacity = '';
+        input.style.transform = '';
+        
+        try {
+          // Force cursor visibility
+          const cursorPosition = input.selectionStart || input.value.length;
+          input.setSelectionRange(cursorPosition, cursorPosition);
+        } catch (e) {
+          console.error('Error setting selection range:', e);
+        }
+      }, 0);
+    };
+    
+    const handleChange = () => {
+      forceInputVisibility();
+      setTimeout(forceInputVisibility, 50);
+    };
+    
+    const handleFocus = () => {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(forceInputVisibility, 100);
+      setTimeout(forceInputVisibility, 300);
+    };
+    
+    input.addEventListener('input', handleChange);
+    input.addEventListener('focus', handleFocus);
+    input.addEventListener('click', handleFocus);
+    
+    return () => {
+      input.removeEventListener('input', handleChange);
+      input.removeEventListener('focus', handleFocus);
+      input.removeEventListener('click', handleFocus);
+    };
+  }, []);
+
   const handleContainerClick = () => {
     if (!disabled && inputRef.current) {
       inputRef.current.focus();
@@ -113,8 +159,14 @@ const TagInput: React.FC<TagInputProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             className="flex-1 outline-none bg-transparent text-sm"
+            style={/Android/.test(navigator.userAgent) ? {
+              WebkitTextFillColor: 'currentColor',
+              color: 'currentColor',
+              opacity: 1
+            } : {}}
             placeholder={tags.length === 0 ? placeholder : ""}
             disabled={disabled}
+            autoComplete="off"
           />
           {inputValue && (
             <button
