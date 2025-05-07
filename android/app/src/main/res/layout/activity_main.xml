@@ -16,5 +16,7 @@
         android:focusableInTouchMode="true"
         android:clickable="true"
         android:longClickable="true"
-        android:layerType="hardware" />
+        android:layerType="hardware"
+        android:visibility="visible"
+        android:background="#FFFFFF" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

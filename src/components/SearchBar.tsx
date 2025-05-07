@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+
+import React, { useState, useRef } from "react";
 import { Search, X, Mic, MicOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -24,75 +25,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const recognitionRef = useRef<any>(null);
   const { language } = useLanguage();
 
-  // Function to get the correct speech recognition language code
+  // Function to get speech recognition language
   const getSpeechLanguage = () => {
     switch (language) {
-      case 'en':
-        return 'en-US';
-      case 'fr':
-        return 'fr-FR';
-      case 'ar':
-        return 'ar-MA';
-      default:
-        return 'en-US';
+      case 'en': return 'en-US';
+      case 'fr': return 'fr-FR';
+      case 'ar': return 'ar-MA';
+      default: return 'en-US';
     }
   };
-
-  useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [autoFocus]);
-
-  useEffect(() => {
-    // Clean up the previous recognition instance
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (e) {
-        console.error("Error cleaning up speech recognition:", e);
-      }
-      recognitionRef.current = null;
-    }
-
-    // Initialize speech recognition if supported
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      
-      // Set language based on app language
-      recognitionRef.current.lang = getSpeechLanguage();
-
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setQuery(transcript);
-        onSearch(transcript);
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onerror = (event: any) => {
-        console.error('Speech recognition error', event.error, event);
-        toast.error("Voice recognition failed. Please try again.");
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (e) {
-          console.error("Error cleaning up speech recognition:", e);
-        }
-      }
-    };
-  }, [onSearch, language]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -125,36 +66,32 @@ const SearchBar: React.FC<SearchBarProps> = ({
       }
     } else {
       try {
-        if (!recognitionRef.current) {
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          recognitionRef.current = new SpeechRecognition();
-          recognitionRef.current.continuous = false;
-          recognitionRef.current.interimResults = false;
-          recognitionRef.current.lang = getSpeechLanguage();
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.lang = getSpeechLanguage();
 
-          recognitionRef.current.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            setQuery(transcript);
-            onSearch(transcript);
-            setIsListening(false);
-          };
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setQuery(transcript);
+          onSearch(transcript);
+          setIsListening(false);
+        };
 
-          recognitionRef.current.onerror = (event: any) => {
-            console.error('Speech recognition error', event.error, event);
-            toast.error("Voice recognition failed. Please try again.");
-            setIsListening(false);
-          };
+        recognitionRef.current.onerror = () => {
+          toast.error("Voice recognition failed. Please try again.");
+          setIsListening(false);
+        };
 
-          recognitionRef.current.onend = () => {
-            setIsListening(false);
-          };
-        }
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
 
         recognitionRef.current.start();
         setIsListening(true);
       } catch (error) {
-        console.error("Speech recognition error:", error);
-        toast.error("Could not start voice recognition. Please check microphone permissions.");
+        toast.error("Could not start voice recognition");
       }
     }
   };
@@ -170,6 +107,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={query}
           onChange={handleChange}
           className="pl-10 pr-10 h-12 rounded-xl bg-white shadow-sm border-0 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+          autoFocus={autoFocus}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {query && (
@@ -190,11 +128,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               )}
               aria-label={isListening ? "Stop voice search" : "Start voice search"}
             >
-              {isListening ? (
-                <MicOff className="h-4 w-4" />
-              ) : (
-                <Mic className="h-4 w-4" />
-              )}
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
           )}
         </div>

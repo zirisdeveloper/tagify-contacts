@@ -14,13 +14,8 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       resize: true,
-      resizeOnFullScreen: true,
       style: "DEFAULT",
-      // These settings help prevent keyboard issues
-      hideFormAccessoryBar: false,
-      backgroundColor: "#FFFFFF", 
-      // Extra settings to ensure keyboard doesn't cover input
-      overrideAndroidResizeMode: true
+      resizeOnFullScreen: true
     }
   },
   android: {
@@ -29,17 +24,9 @@ const config: CapacitorConfig = {
     captureInput: true,
     webContentsDebuggingEnabled: true,
     backgroundColor: "#ffffff",
-    // Set the initial directory for file pickers
-    initialDir: "DEFAULT_DIRECTORY",
-    // Android keyboard settings - use adjustResize to prevent keyboard covering fields
-    windowSoftInputMode: "adjustResize",
-    // These settings help with WebView rendering
-    minSdkVersion: 22,
-    androidScheme: "https",
-    allowNavigation: ["*"]
+    windowSoftInputMode: "adjustResize"
   },
   permissions: {
-    // Request all needed permissions
     READ_EXTERNAL_STORAGE: true,
     WRITE_EXTERNAL_STORAGE: true,
     MANAGE_EXTERNAL_STORAGE: true,
@@ -47,7 +34,6 @@ const config: CapacitorConfig = {
     READ_MEDIA_VIDEO: true, 
     READ_MEDIA_AUDIO: true
   },
-  // Server configuration for development
   server: {
     cleartext: true,
     androidScheme: "https"

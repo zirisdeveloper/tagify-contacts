@@ -1,4 +1,3 @@
-
 package com.zirisdeveloper.piston;
 
 import com.getcapacitor.BridgeActivity;
@@ -8,6 +7,7 @@ import android.webkit.WebView;
 import android.view.WindowManager;
 import android.view.View;
 import android.content.res.Configuration;
+import android.graphics.Color;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -23,23 +23,28 @@ public class MainActivity extends BridgeActivity {
         // Force hardware acceleration for better rendering
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         
-        // Critical for text input visibility
+        // Critical for text input visibility - ADJUST_RESIZE ensures keyboard doesn't cover inputs
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         
-        // Ensure the WebView has focus when keyboard is shown
+        // Force WebView to keep focus when keyboard is shown
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
         webView.requestFocus();
         
-        // Force text rendering to be visible with keyboard
+        // Enhanced text rendering settings
         settings.setTextZoom(100);
-        webView.setTextDirection(View.TEXT_DIRECTION_INHERIT);
+        webView.setBackgroundColor(Color.WHITE);
         
-        // Additional settings to prevent rendering issues
+        // Additional advanced settings for better text input
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
         
-        // Force the default user agent
-        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36");
+        // Use a standard user agent to ensure proper rendering
+        settings.setUserAgentString(null);
     }
     
     @Override

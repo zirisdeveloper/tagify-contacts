@@ -3,39 +3,33 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Detect Android platform and set HTML class and meta tags
+// Basic Android detection and simple fixes
 if (/Android/.test(navigator.userAgent)) {
   document.documentElement.classList.add('android');
   
-  // Add meta tags to force proper input rendering
+  // Set viewport meta for better input handling
   const meta = document.createElement('meta');
   meta.name = 'viewport';
-  meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+  meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
   document.getElementsByTagName('head')[0].appendChild(meta);
   
-  // Force hardware acceleration for the entire page
-  document.body.style.transform = 'translateZ(0)';
-  document.body.style.backfaceVisibility = 'hidden';
-  
-  // Add global styles for input fields on Android
+  // Add simple global styles for Android input fields
   const style = document.createElement('style');
   style.textContent = `
     input, textarea {
+      -webkit-appearance: none;
+      appearance: none;
       -webkit-user-select: text;
       user-select: text;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-text-fill-color: currentColor;
+      background-color: transparent;
     }
     
-    input:focus, textarea:focus {
-      -webkit-text-fill-color: currentColor !important;
-      color: currentColor !important;
-    }
-    
-    .android input, .android textarea {
-      opacity: 1 !important;
-      -webkit-text-fill-color: currentColor !important;
-      color: currentColor !important;
+    .android input:focus,
+    .android textarea:focus,
+    .android [contenteditable]:focus {
+      -webkit-user-select: text;
+      user-select: text;
+      caret-color: currentColor;
     }
   `;
   document.head.appendChild(style);
