@@ -1,16 +1,14 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
 import { useContacts } from "@/context/ContactContext";
 import { useLanguage } from "@/context/LanguageContext";
 import ServiceSearchBar from "@/components/ServiceSearchBar";
 import HomeHeader from "@/components/HomeHeader";
 import SearchResults from "@/components/SearchResults";
 import AboutDialog from "@/components/AboutDialog";
-import { exportJsonToFile } from "@/utils/fileSystem";
+import { useRef } from "react";
 import { handleFileChange, handleImportClick } from "@/utils/importHandlers";
-import { Contact } from "@/types";
 
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -19,7 +17,7 @@ const removeAccents = (str: string): string => {
 const HomePage: React.FC = () => {
   const { contacts, addContact } = useContacts();
   const { t } = useLanguage();
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -57,7 +55,6 @@ const HomePage: React.FC = () => {
 
   const handleSearchContact = () => {
     navigate("/search");
-    toast.info(t("typeNameToFind"));
   };
 
   const handleHome = () => {
@@ -81,6 +78,7 @@ const HomePage: React.FC = () => {
 
   // Export/Import handlers
   const handleExportContacts = async () => {
+    const { exportJsonToFile } = await import('@/utils/fileSystem');
     if (contacts.length === 0) {
       toast.error(t("noContactsToExport"));
       return;
