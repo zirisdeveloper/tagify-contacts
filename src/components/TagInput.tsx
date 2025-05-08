@@ -25,6 +25,7 @@ const TagInput: React.FC<TagInputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isAndroid = React.useMemo(() => /Android/.test(navigator.userAgent), []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,6 +39,40 @@ const TagInput: React.FC<TagInputProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // For Android: ensure input field stays visible and focused
+  useEffect(() => {
+    if (isAndroid && inputRef.current) {
+      const input = inputRef.current;
+      
+      const handleFocus = () => {
+        // Force redraw to ensure caret visibility
+        input.style.opacity = '0.99';
+        setTimeout(() => {
+          input.style.opacity = '1';
+          
+          // Center input in viewport when keyboard opens
+          if (typeof input.scrollIntoView === 'function') {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 0);
+      };
+      
+      // Force text to display while typing
+      const handleInput = () => {
+        input.style.opacity = '0.99';
+        setTimeout(() => input.style.opacity = '1', 0);
+      };
+      
+      input.addEventListener('focus', handleFocus);
+      input.addEventListener('input', handleInput);
+      
+      return () => {
+        input.removeEventListener('focus', handleFocus);
+        input.removeEventListener('input', handleInput);
+      };
+    }
+  }, [isAndroid]);
 
   const handleContainerClick = () => {
     if (!disabled && inputRef.current) {
@@ -112,7 +147,10 @@ const TagInput: React.FC<TagInputProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
-            className="flex-1 outline-none bg-transparent text-sm border-none"
+            className={cn(
+              "flex-1 outline-none bg-transparent text-sm border-none",
+              isAndroid && "android-input caret-current"
+            )}
             placeholder={tags.length === 0 ? placeholder : ""}
             disabled={disabled}
             autoComplete="off"

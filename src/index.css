@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -72,19 +71,29 @@
     caret-color: currentColor !important;
     -webkit-opacity: 1 !important;
     opacity: 1 !important;
+    font-weight: normal !important;
   }
   
   /* Fix Android input centering when keyboard is open */
   .android input:focus,
   .android textarea:focus {
     position: relative;
-    z-index: 2; /* Ensure input is above other elements */
+    z-index: 10; /* Ensure input is above other elements */
+    font-weight: bold !important; /* Force text to render while typing */
+    transform: translateZ(0); /* Force hardware acceleration */
   }
   
   /* Force hardware acceleration for better keyboard handling */
   .android-input, .android-textarea {
     transform: translateZ(0);
     will-change: transform;
+  }
+  
+  /* When keyboard is open, add padding to the bottom of the page to ensure inputs are visible */
+  @media screen and (max-height: 600px) {
+    .android body {
+      padding-bottom: 60vh;
+    }
   }
   
   .contact-appear {
@@ -145,5 +154,9 @@
     position: relative;
     z-index: 1;
   }
+  
+  /* Force hardware acceleration on all interactive elements */
+  button, a, input, textarea, select {
+    transform: translateZ(0);
+  }
 }
-

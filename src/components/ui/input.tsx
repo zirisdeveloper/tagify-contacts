@@ -1,7 +1,6 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { isMobileDevice } from "@/utils/fileSystem/deviceDetection"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
@@ -24,11 +23,27 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           input.style.opacity = '0.99';
           setTimeout(() => {
             input.style.opacity = '1';
+            
+            // Center input in viewport when keyboard opens
+            if (typeof input.scrollIntoView === 'function') {
+              input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
           }, 0);
         };
         
+        // Force text to display while typing
+        const handleInput = () => {
+          input.style.opacity = '0.99';
+          setTimeout(() => input.style.opacity = '1', 0);
+        };
+        
         input.addEventListener('focus', handleFocus);
-        return () => input.removeEventListener('focus', handleFocus);
+        input.addEventListener('input', handleInput);
+        
+        return () => {
+          input.removeEventListener('focus', handleFocus);
+          input.removeEventListener('input', handleInput);
+        };
       }
     }, [isAndroid]);
 

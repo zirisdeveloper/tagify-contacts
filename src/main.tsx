@@ -45,9 +45,12 @@ if (/Android/.test(navigator.userAgent)) {
   // Handle keyboard visibility
   document.addEventListener('focusin', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-      // Scroll to the input field when focused
+      // Safely scroll to the input field when focused
       setTimeout(() => {
-        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const element = e.target as HTMLElement;
+        if (element && typeof element.scrollIntoView === 'function') {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }, 300);
     }
   });

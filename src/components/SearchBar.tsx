@@ -26,6 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const { language } = useLanguage();
+  const isAndroid = React.useMemo(() => /Android/.test(navigator.userAgent), []);
 
   // Set default placeholder based on search type
   if (!placeholder) {

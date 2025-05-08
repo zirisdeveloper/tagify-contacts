@@ -26,11 +26,27 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           textarea.style.opacity = '0.99';
           setTimeout(() => {
             textarea.style.opacity = '1';
+            
+            // Center textarea in viewport when keyboard opens
+            if (typeof textarea.scrollIntoView === 'function') {
+              textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
           }, 0);
         };
         
+        // Force text to display while typing
+        const handleInput = () => {
+          textarea.style.opacity = '0.99';
+          setTimeout(() => textarea.style.opacity = '1', 0);
+        };
+        
         textarea.addEventListener('focus', handleFocus);
-        return () => textarea.removeEventListener('focus', handleFocus);
+        textarea.addEventListener('input', handleInput);
+        
+        return () => {
+          textarea.removeEventListener('focus', handleFocus);
+          textarea.removeEventListener('input', handleInput);
+        };
       }
     }, [isAndroid]);
 
