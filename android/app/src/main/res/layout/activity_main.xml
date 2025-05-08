@@ -4,19 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" 
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:clickable="true"
-        android:longClickable="true"
-        android:layerType="hardware"
-        android:visibility="visible"
-        android:background="#FFFFFF"
-        android:descendantFocusability="afterDescendants" />
+        android:layout_height="match_parent" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

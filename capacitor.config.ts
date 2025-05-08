@@ -11,25 +11,11 @@ const config: CapacitorConfig = {
     },
     Filesystem: {
       androidPermissions: true
-    },
-    Keyboard: {
-      resize: true,
-      style: "DARK",
-      resizeOnFullScreen: true,
-      // Enable scrolling when keyboard is open
-      scrollEnabled: true
     }
   },
   android: {
     useLegacyStorage: true,
-    allowMixedContent: true,
-    captureInput: true,
-    webContentsDebuggingEnabled: true,
-    backgroundColor: "#ffffff",
-    windowSoftInputMode: "adjustResize",
-    // Additional settings to improve input handling
-    initialFocus: true,
-    hardwareAcceleration: true
+    allowMixedContent: true
   },
   permissions: {
     READ_EXTERNAL_STORAGE: true,
