@@ -1,3 +1,4 @@
+
 package com.zirisdeveloper.piston;
 
 import com.getcapacitor.BridgeActivity;
@@ -8,6 +9,9 @@ import android.view.WindowManager;
 import android.view.View;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -43,6 +47,13 @@ public class MainActivity extends BridgeActivity {
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         
+        // Critical for input handling
+        settings.setSupportMultipleWindows(true);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setBuiltInZoomControls(false);
+        settings.setSupportZoom(false);
+        
         // Use a standard user agent to ensure proper rendering
         settings.setUserAgentString(null);
     }
@@ -67,5 +78,20 @@ public class MainActivity extends BridgeActivity {
         webView.post(() -> {
             webView.requestFocus();
         });
+        
+        // Reset input mode
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        
+        // Hide keyboard when app is paused
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+        if (view != null && imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

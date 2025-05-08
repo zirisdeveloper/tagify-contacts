@@ -45,7 +45,7 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Android input fixes */
+  /* Enhanced Android input fixes */
   input, textarea {
     -webkit-user-select: text;
     user-select: text;
@@ -63,7 +63,30 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
-
+  
+  /* Enhanced input visibility fixes for Android */
+  html.android input,
+  html.android textarea {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    caret-color: currentColor !important;
+    -webkit-opacity: 1 !important;
+    opacity: 1 !important;
+  }
+  
+  /* Fix Android input centering when keyboard is open */
+  .android input:focus,
+  .android textarea:focus {
+    position: relative;
+    z-index: 2; /* Ensure input is above other elements */
+  }
+  
+  /* Force hardware acceleration for better keyboard handling */
+  .android-input, .android-textarea {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
   .contact-appear {
     animation: fade-in 0.3s ease-out, scale-in 0.3s ease-out;
   }
@@ -101,7 +124,7 @@
   }
 }
 
-/* Add Android platform detection */
+/* Enhanced Android platform detection and styles */
 @media all {
   html:before {
     content: '';
@@ -113,5 +136,14 @@
   html.android textarea {
     caret-color: currentColor !important;
     opacity: 1 !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+  
+  /* Fix for Android input field visibility */
+  html.android .input-container {
+    position: relative;
+    z-index: 1;
   }
 }
+

@@ -14,8 +14,10 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       resize: true,
-      style: "DEFAULT",
-      resizeOnFullScreen: true
+      style: "DARK",
+      resizeOnFullScreen: true,
+      // Enable scrolling when keyboard is open
+      scrollEnabled: true
     }
   },
   android: {
@@ -24,7 +26,10 @@ const config: CapacitorConfig = {
     captureInput: true,
     webContentsDebuggingEnabled: true,
     backgroundColor: "#ffffff",
-    windowSoftInputMode: "adjustResize"
+    windowSoftInputMode: "adjustResize",
+    // Additional settings to improve input handling
+    initialFocus: true,
+    hardwareAcceleration: true
   },
   permissions: {
     READ_EXTERNAL_STORAGE: true,
