@@ -1,5 +1,7 @@
 
 import { Directory } from '@capacitor/filesystem';
+import { Dialog } from '@capacitor/dialog';
+import { isMobileWithCapacitor } from './deviceDetection';
 
 /**
  * Available storage locations for mobile exports
@@ -35,9 +37,6 @@ export const getPreferredStorageLocation = (): Directory => {
  * @returns Promise resolving to the selected directory or null if cancelled
  */
 export const selectStorageLocation = async (): Promise<Directory | null> => {
-  import { Dialog } from '@capacitor/dialog';
-  import { isMobileWithCapacitor } from './deviceDetection';
-  
   if (!isMobileWithCapacitor()) {
     return null;
   }
@@ -79,8 +78,6 @@ export const selectStorageLocation = async (): Promise<Directory | null> => {
  * @returns Promise that resolves when the file picker is opened
  */
 export const openFilePickerInDocuments = async (): Promise<void> => {
-  import { isMobileWithCapacitor } from './deviceDetection';
-  
   // For mobile devices with Capacitor
   if (isMobileWithCapacitor()) {
     try {
