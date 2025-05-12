@@ -79,37 +79,33 @@ export const handleFileChange = async (
           // Show confirmation dialog for duplicates
           handleDuplicateContacts(
             duplicates,
-            (dupsToMerge) => {
-              // User chose to merge tags for duplicates
-              dupsToMerge.forEach(({ contact, existingContact }) => {
-                // Get new tags that don't exist in the current contact
+            (dupsToOverwrite) => {
+              // User chose to overwrite duplicates
+              dupsToOverwrite.forEach(({ contact, existingContact }) => {
+                // Add new tags that don't exist yet
                 const newTags = contact.tags.filter(newTag => 
                   !existingContact.tags.some(existingTag => 
                     existingTag.name.toLowerCase() === newTag.name.toLowerCase()
                   )
                 );
                 
-                // Update the existing contact with merged tags if there are new tags
-                if (newTags.length > 0) {
-                  updateContact(existingContact.id, {
-                    tags: [...existingContact.tags, ...newTags]
-                  });
-                }
+                // Update the existing contact with new tags
+                updateContact(existingContact.id, {
+                  tags: [...existingContact.tags, ...newTags]
+                });
               });
               
               // Add all non-duplicate contacts
-              let importedCount = uniqueContacts.length;
               uniqueContacts.forEach(contact => {
                 try {
                   addContact(contact);
                 } catch (error) {
                   console.error("Error importing contact:", error);
-                  importedCount--;
                 }
               });
 
               // Show success message
-              toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsMerged") || "contacts merged"}` : ''}`);
+              toast.success(`${uniqueContacts.length} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsOverwritten") || "contacts overwritten"}` : ''}`);
               
               if (fileInputRef.current) {
                 fileInputRef.current.value = "";
@@ -274,37 +270,33 @@ export const handleFileChange = async (
               // Show confirmation dialog for duplicates
               handleDuplicateContacts(
                 duplicates,
-                (dupsToMerge) => {
-                  // User chose to merge tags for duplicates
-                  dupsToMerge.forEach(({ contact, existingContact }) => {
-                    // Get new tags that don't exist in the current contact
+                (dupsToOverwrite) => {
+                  // User chose to overwrite duplicates
+                  dupsToOverwrite.forEach(({ contact, existingContact }) => {
+                    // Add new tags that don't exist yet
                     const newTags = contact.tags.filter(newTag => 
                       !existingContact.tags.some(existingTag => 
                         existingTag.name.toLowerCase() === newTag.name.toLowerCase()
                       )
                     );
                     
-                    // Update the existing contact with merged tags if there are new tags
-                    if (newTags.length > 0) {
-                      updateContact(existingContact.id, {
-                        tags: [...existingContact.tags, ...newTags]
-                      });
-                    }
+                    // Update the existing contact with new tags
+                    updateContact(existingContact.id, {
+                      tags: [...existingContact.tags, ...newTags]
+                    });
                   });
                   
                   // Add all non-duplicate contacts
-                  let importedCount = uniqueContacts.length;
                   uniqueContacts.forEach(contact => {
                     try {
                       addContact(contact);
                     } catch (error) {
                       console.error("Error importing contact:", error);
-                      importedCount--;
                     }
                   });
 
                   // Show success message
-                  toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsMerged") || "contacts merged"}` : ''}`);
+                  toast.success(`${uniqueContacts.length} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsOverwritten") || "contacts overwritten"}` : ''}`);
                   
                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";

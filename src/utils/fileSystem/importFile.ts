@@ -43,7 +43,7 @@ export const findDuplicateContacts = (
 // Function to handle duplicate contact resolution with dialog
 export const handleDuplicateContacts = (
   duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[],
-  onMergeTags: (duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[]) => void,
+  onOverwrite: (duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[]) => void,
   onSkip: () => void,
   t: (key: string) => string
 ) => {
@@ -106,11 +106,11 @@ export const handleDuplicateContacts = (
           ),
           React.createElement(AlertDialogAction, { 
             onClick: () => {
-              onMergeTags(duplicates);
+              onOverwrite(duplicates);
               cleanupDialog();
             }
           }, 
-          t("mergeTags") || "Merge Tags"
+          t("overwriteContacts") || "Overwrite Contacts"
           )
         )
       ))
