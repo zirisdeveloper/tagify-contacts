@@ -3,114 +3,9 @@ import { Contact } from "@/types";
 import { toast } from "sonner";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { openFilePickerInDocuments } from "@/utils/fileSystem";
-import { Dialog } from "@radix-ui/react-dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import React, { useState } from "react";
+import { findDuplicateContacts, handleDuplicateContacts } from "@/utils/fileSystem/importFile";
 
-// Function to handle duplicate contact resolution
-const handleDuplicateContacts = (
-  duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[],
-  onOverwrite: (duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[]) => void,
-  onSkip: () => void,
-  t: (key: string) => string
-) => {
-  // Create and render a dialog element
-  const dialogRoot = document.createElement('div');
-  dialogRoot.id = 'duplicate-dialog-root';
-  document.body.appendChild(dialogRoot);
-
-  const cleanupDialog = () => {
-    // Remove the dialog from DOM when finished
-    if (dialogRoot && dialogRoot.parentNode) {
-      dialogRoot.parentNode.removeChild(dialogRoot);
-    }
-  };
-
-  // Using AlertDialog from shadcn/ui
-  const DialogComponent = () => {
-    // Create a React root and render the dialog
-    const createRoot = require('react-dom/client').createRoot;
-    const root = createRoot(dialogRoot);
-
-    root.render(
-      <AlertDialog defaultOpen={true} onOpenChange={(open) => {
-        if (!open) {
-          onSkip();
-          cleanupDialog();
-        }
-      }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("duplicateContactsFound") || "Duplicate Contacts Found"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {duplicates.length === 1 
-                ? t("singleDuplicateContactMessage") || `A contact with the same name or phone number already exists.`
-                : `${duplicates.length} ${t("multipleDuplicateContactsMessage") || `contacts with the same name or phone number already exist.`}`
-              }
-              {t("whatWouldYouLikeToDo") || "What would you like to do?"}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              onSkip();
-              cleanupDialog();
-            }}>
-              {t("skipDuplicates") || "Skip Duplicates"}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              onOverwrite(duplicates);
-              cleanupDialog();
-            }}>
-              {t("mergeTags") || "Merge Tags"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  };
-
-  // Initialize the dialog
-  DialogComponent();
-};
-
-// Function to check for duplicate contacts
-const findDuplicateContacts = (
-  newContacts: Omit<Contact, "id">[],
-  findContactByName: (name: string, familyName?: string) => Contact | undefined,
-  findContactByPhone: (phoneNumber: string) => Contact | undefined
-): { contact: Omit<Contact, "id">, existingContact: Contact }[] => {
-  const duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[] = [];
-
-  newContacts.forEach(contact => {
-    // Check for duplicate by name
-    const nameMatch = findContactByName(contact.name, contact.familyName);
-    if (nameMatch) {
-      duplicates.push({ contact, existingContact: nameMatch });
-      return;
-    }
-
-    // Check for duplicate by phone number (primary or secondary)
-    if (contact.phoneNumber) {
-      const phoneMatch = findContactByPhone(contact.phoneNumber);
-      if (phoneMatch) {
-        duplicates.push({ contact, existingContact: phoneMatch });
-        return;
-      }
-    }
-
-    // Check secondary phone if it exists
-    if (contact.phoneNumber2) {
-      const phone2Match = findContactByPhone(contact.phoneNumber2);
-      if (phone2Match) {
-        duplicates.push({ contact, existingContact: phone2Match });
-        return;
-      }
-    }
-  });
-
-  return duplicates;
-};
-
+// Function to handle file import
 export const handleFileChange = async (
   event: React.ChangeEvent<HTMLInputElement>,
   fileInputRef: React.RefObject<HTMLInputElement>,
@@ -184,9 +79,9 @@ export const handleFileChange = async (
           // Show confirmation dialog for duplicates
           handleDuplicateContacts(
             duplicates,
-            (dupsToOverwrite) => {
+            (dupsToMerge) => {
               // User chose to merge tags for duplicates
-              dupsToOverwrite.forEach(({ contact, existingContact }) => {
+              dupsToMerge.forEach(({ contact, existingContact }) => {
                 // Get new tags that don't exist in the current contact
                 const newTags = contact.tags.filter(newTag => 
                   !existingContact.tags.some(existingTag => 
@@ -379,9 +274,9 @@ export const handleFileChange = async (
               // Show confirmation dialog for duplicates
               handleDuplicateContacts(
                 duplicates,
-                (dupsToOverwrite) => {
+                (dupsToMerge) => {
                   // User chose to merge tags for duplicates
-                  dupsToOverwrite.forEach(({ contact, existingContact }) => {
+                  dupsToMerge.forEach(({ contact, existingContact }) => {
                     // Get new tags that don't exist in the current contact
                     const newTags = contact.tags.filter(newTag => 
                       !existingContact.tags.some(existingTag => 
