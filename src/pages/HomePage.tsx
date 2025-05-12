@@ -16,7 +16,7 @@ const removeAccents = (str: string): string => {
 };
 
 const HomePage: React.FC = () => {
-  const { contacts, addContact } = useContacts();
+  const { contacts, addContact, updateContact, findContactByName, findContactByPhone } = useContacts();
   const { t } = useLanguage();
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +104,7 @@ const HomePage: React.FC = () => {
 
   // File import handler using the imported utility function
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileChange(event, fileInputRef, addContact, t);
+    handleFileChange(event, fileInputRef, addContact, updateContact, findContactByName, findContactByPhone, t);
   };
 
   // Import click handler using the imported utility function

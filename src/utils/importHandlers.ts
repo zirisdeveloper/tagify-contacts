@@ -3,11 +3,121 @@ import { Contact } from "@/types";
 import { toast } from "sonner";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { openFilePickerInDocuments } from "@/utils/fileSystem";
+import { Dialog } from "@radix-ui/react-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import React, { useState } from "react";
+
+// Function to handle duplicate contact resolution
+const handleDuplicateContacts = (
+  duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[],
+  onOverwrite: (duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[]) => void,
+  onSkip: () => void,
+  t: (key: string) => string
+) => {
+  // Create and render a dialog element
+  const dialogRoot = document.createElement('div');
+  dialogRoot.id = 'duplicate-dialog-root';
+  document.body.appendChild(dialogRoot);
+
+  const cleanupDialog = () => {
+    // Remove the dialog from DOM when finished
+    if (dialogRoot && dialogRoot.parentNode) {
+      dialogRoot.parentNode.removeChild(dialogRoot);
+    }
+  };
+
+  // Using AlertDialog from shadcn/ui
+  const DialogComponent = () => {
+    // Create a React root and render the dialog
+    const createRoot = require('react-dom/client').createRoot;
+    const root = createRoot(dialogRoot);
+
+    root.render(
+      <AlertDialog defaultOpen={true} onOpenChange={(open) => {
+        if (!open) {
+          onSkip();
+          cleanupDialog();
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("duplicateContactsFound") || "Duplicate Contacts Found"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {duplicates.length === 1 
+                ? t("singleDuplicateContactMessage") || `A contact with the same name or phone number already exists.`
+                : `${duplicates.length} ${t("multipleDuplicateContactsMessage") || `contacts with the same name or phone number already exist.`}`
+              }
+              {t("whatWouldYouLikeToDo") || "What would you like to do?"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              onSkip();
+              cleanupDialog();
+            }}>
+              {t("skipDuplicates") || "Skip Duplicates"}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              onOverwrite(duplicates);
+              cleanupDialog();
+            }}>
+              {t("mergeTags") || "Merge Tags"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
+
+  // Initialize the dialog
+  DialogComponent();
+};
+
+// Function to check for duplicate contacts
+const findDuplicateContacts = (
+  newContacts: Omit<Contact, "id">[],
+  findContactByName: (name: string, familyName?: string) => Contact | undefined,
+  findContactByPhone: (phoneNumber: string) => Contact | undefined
+): { contact: Omit<Contact, "id">, existingContact: Contact }[] => {
+  const duplicates: { contact: Omit<Contact, "id">, existingContact: Contact }[] = [];
+
+  newContacts.forEach(contact => {
+    // Check for duplicate by name
+    const nameMatch = findContactByName(contact.name, contact.familyName);
+    if (nameMatch) {
+      duplicates.push({ contact, existingContact: nameMatch });
+      return;
+    }
+
+    // Check for duplicate by phone number (primary or secondary)
+    if (contact.phoneNumber) {
+      const phoneMatch = findContactByPhone(contact.phoneNumber);
+      if (phoneMatch) {
+        duplicates.push({ contact, existingContact: phoneMatch });
+        return;
+      }
+    }
+
+    // Check secondary phone if it exists
+    if (contact.phoneNumber2) {
+      const phone2Match = findContactByPhone(contact.phoneNumber2);
+      if (phone2Match) {
+        duplicates.push({ contact, existingContact: phone2Match });
+        return;
+      }
+    }
+  });
+
+  return duplicates;
+};
 
 export const handleFileChange = async (
   event: React.ChangeEvent<HTMLInputElement>,
   fileInputRef: React.RefObject<HTMLInputElement>,
   addContact: (contact: Omit<Contact, "id">) => void,
+  updateContact: (id: string, contact: Partial<Contact>) => void,
+  findContactByName: (name: string, familyName?: string) => Contact | undefined,
+  findContactByPhone: (phoneNumber: string) => Contact | undefined,
   t: (key: string) => string
 ) => {
   const file = event.target.files?.[0];
@@ -57,21 +167,97 @@ export const handleFileChange = async (
           throw new Error("No valid contacts found in the file");
         }
 
-        let importedCount = 0;
-        validContacts.forEach((contact: Omit<Contact, "id">) => {
-          try {
-            addContact(contact);
-            importedCount++;
-          } catch (error) {
-            console.error("Error importing contact:", error);
+        // Check for duplicate contacts
+        const duplicates = findDuplicateContacts(validContacts, findContactByName, findContactByPhone);
+        
+        // Determine which contacts are unique (not duplicates)
+        const uniqueContacts = validContacts.filter(contact => 
+          !duplicates.some(dup => 
+            (dup.contact.name === contact.name && dup.contact.familyName === contact.familyName) ||
+            (contact.phoneNumber && dup.contact.phoneNumber === contact.phoneNumber) || 
+            (contact.phoneNumber2 && dup.contact.phoneNumber2 === contact.phoneNumber2)
+          )
+        );
+
+        // Handle import based on whether duplicates were found
+        if (duplicates.length > 0) {
+          // Show confirmation dialog for duplicates
+          handleDuplicateContacts(
+            duplicates,
+            (dupsToOverwrite) => {
+              // User chose to merge tags for duplicates
+              dupsToOverwrite.forEach(({ contact, existingContact }) => {
+                // Get new tags that don't exist in the current contact
+                const newTags = contact.tags.filter(newTag => 
+                  !existingContact.tags.some(existingTag => 
+                    existingTag.name.toLowerCase() === newTag.name.toLowerCase()
+                  )
+                );
+                
+                // Update the existing contact with merged tags if there are new tags
+                if (newTags.length > 0) {
+                  updateContact(existingContact.id, {
+                    tags: [...existingContact.tags, ...newTags]
+                  });
+                }
+              });
+              
+              // Add all non-duplicate contacts
+              let importedCount = uniqueContacts.length;
+              uniqueContacts.forEach(contact => {
+                try {
+                  addContact(contact);
+                } catch (error) {
+                  console.error("Error importing contact:", error);
+                  importedCount--;
+                }
+              });
+
+              // Show success message
+              toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsMerged") || "contacts merged"}` : ''}`);
+              
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            },
+            () => {
+              // User chose to skip duplicates, only add unique contacts
+              let importedCount = 0;
+              uniqueContacts.forEach(contact => {
+                try {
+                  addContact(contact);
+                  importedCount++;
+                } catch (error) {
+                  console.error("Error importing contact:", error);
+                }
+              });
+
+              toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsSkipped") || "duplicates skipped"}` : ''}`);
+              
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            },
+            t
+          );
+        } else {
+          // No duplicates, proceed with normal import
+          let importedCount = 0;
+          validContacts.forEach((contact: Omit<Contact, "id">) => {
+            try {
+              addContact(contact);
+              importedCount++;
+            } catch (error) {
+              console.error("Error importing contact:", error);
+            }
+          });
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
           }
-        });
 
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
+          toast.success(`${importedCount} ${t("contactsImported")}`);
         }
-
-        toast.success(`${importedCount} ${t("contactsImported")}`);
       } catch (error) {
         console.error("Import error during parsing:", error);
         
@@ -175,17 +361,93 @@ export const handleFileChange = async (
             if (validContacts.length === 0) {
               throw new Error("No valid contacts found in the file");
             }
+
+            // Check for duplicate contacts
+            const duplicates = findDuplicateContacts(validContacts, findContactByName, findContactByPhone);
             
-            let importedCount = 0;
-            validContacts.forEach((contact: Omit<Contact, "id">) => {
-              try {
-                addContact(contact);
-                importedCount++;
-              } catch (error) {
-                console.error("Error importing contact:", error);
-              }
-            });
-            
+            // Determine which contacts are unique (not duplicates)
+            const uniqueContacts = validContacts.filter(contact => 
+              !duplicates.some(dup => 
+                (dup.contact.name === contact.name && dup.contact.familyName === contact.familyName) ||
+                (contact.phoneNumber && dup.contact.phoneNumber === contact.phoneNumber) || 
+                (contact.phoneNumber2 && dup.contact.phoneNumber2 === contact.phoneNumber2)
+              )
+            );
+
+            // Handle import based on whether duplicates were found
+            if (duplicates.length > 0) {
+              // Show confirmation dialog for duplicates
+              handleDuplicateContacts(
+                duplicates,
+                (dupsToOverwrite) => {
+                  // User chose to merge tags for duplicates
+                  dupsToOverwrite.forEach(({ contact, existingContact }) => {
+                    // Get new tags that don't exist in the current contact
+                    const newTags = contact.tags.filter(newTag => 
+                      !existingContact.tags.some(existingTag => 
+                        existingTag.name.toLowerCase() === newTag.name.toLowerCase()
+                      )
+                    );
+                    
+                    // Update the existing contact with merged tags if there are new tags
+                    if (newTags.length > 0) {
+                      updateContact(existingContact.id, {
+                        tags: [...existingContact.tags, ...newTags]
+                      });
+                    }
+                  });
+                  
+                  // Add all non-duplicate contacts
+                  let importedCount = uniqueContacts.length;
+                  uniqueContacts.forEach(contact => {
+                    try {
+                      addContact(contact);
+                    } catch (error) {
+                      console.error("Error importing contact:", error);
+                      importedCount--;
+                    }
+                  });
+
+                  // Show success message
+                  toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsMerged") || "contacts merged"}` : ''}`);
+                  
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                },
+                () => {
+                  // User chose to skip duplicates, only add unique contacts
+                  let importedCount = 0;
+                  uniqueContacts.forEach(contact => {
+                    try {
+                      addContact(contact);
+                      importedCount++;
+                    } catch (error) {
+                      console.error("Error importing contact:", error);
+                    }
+                  });
+
+                  toast.success(`${importedCount} ${t("contactsImported")}${duplicates.length > 0 ? `, ${duplicates.length} ${t("contactsSkipped") || "duplicates skipped"}` : ''}`);
+                  
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                },
+                t
+              );
+            } else {
+              // No duplicates, proceed with normal import
+              let importedCount = 0;
+              validContacts.forEach((contact: Omit<Contact, "id">) => {
+                try {
+                  addContact(contact);
+                  importedCount++;
+                } catch (error) {
+                  console.error("Error importing contact:", error);
+                }
+              });
+            }
+
             // Step 5: Clean up temporary file
             try {
               await Filesystem.deleteFile({
@@ -202,7 +464,9 @@ export const handleFileChange = async (
               fileInputRef.current.value = "";
             }
             
-            toast.success(`${importedCount} ${t("contactsImported")}`);
+            if (!duplicates.length) {
+              toast.success(`${validContacts.length} ${t("contactsImported")}`);
+            }
           } catch (processingError) {
             console.error("Error processing file:", processingError);
             toast.error(`${t("importFailed")}: ${processingError instanceof Error ? processingError.message : t("processingError")}`);
