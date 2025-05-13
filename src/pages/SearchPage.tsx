@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Search as SearchIcon } from "lucide-react";
@@ -7,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import ContactSearchBar from "@/components/ContactSearchBar";
 import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
+import Header from "@/components/Header";
 import { Contact } from "@/types";
 import { removeAccents } from "@/utils/contactUtils";
 

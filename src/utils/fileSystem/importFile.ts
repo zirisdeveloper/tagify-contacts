@@ -1,6 +1,9 @@
 
 import { Contact } from "@/types";
 import { toast } from "sonner";
+import * as React from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 // Function to check for duplicate contacts
 export const findDuplicateContacts = (
@@ -59,64 +62,48 @@ export const handleDuplicateContacts = (
     }
   };
 
-  // Using AlertDialog from shadcn/ui
-  const DialogComponent = () => {
-    // Create a React root and render the dialog
-    const createRoot = require('react-dom/client').createRoot;
-    const root = createRoot(dialogRoot);
-
-    const AlertDialog = require('@/components/ui/alert-dialog').AlertDialog;
-    const AlertDialogContent = require('@/components/ui/alert-dialog').AlertDialogContent;
-    const AlertDialogHeader = require('@/components/ui/alert-dialog').AlertDialogHeader;
-    const AlertDialogTitle = require('@/components/ui/alert-dialog').AlertDialogTitle;
-    const AlertDialogDescription = require('@/components/ui/alert-dialog').AlertDialogDescription;
-    const AlertDialogFooter = require('@/components/ui/alert-dialog').AlertDialogFooter;
-    const AlertDialogCancel = require('@/components/ui/alert-dialog').AlertDialogCancel;
-    const AlertDialogAction = require('@/components/ui/alert-dialog').AlertDialogAction;
-    const React = require('react');
-
-    root.render(
-      React.createElement(AlertDialog, { defaultOpen: true, onOpenChange: (open) => {
-        if (!open) {
-          onSkip();
-          cleanupDialog();
-        }
-      }}, 
-      React.createElement(AlertDialogContent, {}, 
-        React.createElement(AlertDialogHeader, {}, 
-          React.createElement(AlertDialogTitle, {}, 
-            t("duplicateContactsFound") || "Duplicate Contacts Found"
-          ),
-          React.createElement(AlertDialogDescription, {}, 
-            duplicates.length === 1 
-              ? t("singleDuplicateContactMessage") || "A contact with the same name or phone number already exists."
-              : `${duplicates.length} ${t("multipleDuplicateContactsMessage") || "contacts with the same name or phone number already exist."}`,
-            " ",
-            t("whatWouldYouLikeToDo") || "What would you like to do?"
-          )
+  // Create a React root and render the dialog
+  const root = ReactDOM.createRoot(dialogRoot);
+  
+  // Render the AlertDialog component directly without requiring it
+  root.render(
+    React.createElement(AlertDialog, { defaultOpen: true, onOpenChange: (open) => {
+      if (!open) {
+        onSkip();
+        cleanupDialog();
+      }
+    }}, 
+    React.createElement(AlertDialogContent, {}, 
+      React.createElement(AlertDialogHeader, {}, 
+        React.createElement(AlertDialogTitle, {}, 
+          t("duplicateContactsFound") || "Duplicate Contacts Found"
         ),
-        React.createElement(AlertDialogFooter, {}, 
-          React.createElement(AlertDialogCancel, { 
-            onClick: () => {
-              onSkip();
-              cleanupDialog();
-            }
-          }, 
-          t("skipDuplicates") || "Skip Duplicates"
-          ),
-          React.createElement(AlertDialogAction, { 
-            onClick: () => {
-              onOverwrite(duplicates);
-              cleanupDialog();
-            }
-          }, 
-          t("overwriteContacts") || "Overwrite Contacts"
-          )
+        React.createElement(AlertDialogDescription, {}, 
+          duplicates.length === 1 
+            ? t("singleDuplicateContactMessage") || "A contact with the same name or phone number already exists."
+            : `${duplicates.length} ${t("multipleDuplicateContactsMessage") || "contacts with the same name or phone number already exist."}`,
+          " ",
+          t("whatWouldYouLikeToDo") || "What would you like to do?"
         )
-      ))
-    );
-  };
-
-  // Initialize the dialog
-  DialogComponent();
+      ),
+      React.createElement(AlertDialogFooter, {}, 
+        React.createElement(AlertDialogCancel, { 
+          onClick: () => {
+            onSkip();
+            cleanupDialog();
+          }
+        }, 
+        t("skipDuplicates") || "Skip Duplicates"
+        ),
+        React.createElement(AlertDialogAction, { 
+          onClick: () => {
+            onOverwrite(duplicates);
+            cleanupDialog();
+          }
+        }, 
+        t("overwriteContacts") || "Overwrite Contacts"
+        )
+      )
+    ))
+  );
 };
