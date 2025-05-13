@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useContacts } from "@/context/ContactContext";
@@ -10,10 +9,7 @@ import SearchResults from "@/components/SearchResults";
 import AboutDialog from "@/components/AboutDialog";
 import { useRef } from "react";
 import { handleFileChange, handleImportClick } from "@/utils/importHandlers";
-
-const removeAccents = (str: string): string => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
+import { removeAccents } from "@/utils/contactUtils";
 
 const HomePage: React.FC = () => {
   const { contacts, addContact, updateContact, findContactByName, findContactByPhone } = useContacts();

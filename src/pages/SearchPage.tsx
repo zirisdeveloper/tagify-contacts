@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Search as SearchIcon } from "lucide-react";
@@ -8,13 +7,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import ContactSearchBar from "@/components/ContactSearchBar";
 import ContactCard from "@/components/ContactCard";
 import EmptyState from "@/components/EmptyState";
-import Header from "@/components/Header";
 import { Contact } from "@/types";
-
-// Helper function to remove accents from a string
-const removeAccents = (str: string): string => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
+import { removeAccents } from "@/utils/contactUtils";
 
 const SearchPage: React.FC = () => {
   const { contacts } = useContacts();
