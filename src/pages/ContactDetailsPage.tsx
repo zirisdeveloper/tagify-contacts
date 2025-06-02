@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Edit, Trash2, Plus, User, Phone } from "lucide-react";
 import { useContacts } from "@/context/ContactContext";
 import { Tag } from "@/types";
@@ -36,6 +36,7 @@ const ContactDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [tagsError, setTagsError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     contacts,
     updateContact,
@@ -52,6 +53,9 @@ const ContactDetailsPage: React.FC = () => {
   const [editedPhoneNumber2, setEditedPhoneNumber2] = useState("");
   const [isAddTagOpen, setIsAddTagOpen] = useState(false);
   const [newTags, setNewTags] = useState<Tag[]>([]);
+
+  // Check if we came from search page
+  const cameFromSearch = location.state?.from === '/search';
 
   if (!contact) {
     return (
@@ -123,7 +127,12 @@ const ContactDetailsPage: React.FC = () => {
 
   const handleDeleteContact = () => {
     deleteContact(contact.id);
-    navigate("/");
+    // Navigate back to search page if we came from there, otherwise to home
+    if (cameFromSearch) {
+      navigate("/search");
+    } else {
+      navigate("/");
+    }
   };
 
   return (

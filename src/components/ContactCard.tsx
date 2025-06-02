@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Contact } from "@/types";
 import TagPill from "./TagPill";
 import { User } from "lucide-react";
@@ -12,9 +12,13 @@ interface ContactCardProps {
 }
 
 const ContactCard: React.FC<ContactCardProps> = ({ contact, className }) => {
+  const location = useLocation();
+  const isSearchPage = location.pathname === '/search';
+
   return (
     <Link 
-      to={`/contact/${contact.id}`} 
+      to={`/contact/${contact.id}`}
+      state={isSearchPage ? { from: '/search' } : undefined}
       className={cn(
         "block p-4 rounded-xl bg-white shadow-sm border border-border/40 transition-all hover:shadow-md hover:border-primary/20 active:scale-[0.98] contact-appear",
         className

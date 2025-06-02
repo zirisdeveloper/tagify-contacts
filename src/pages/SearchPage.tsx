@@ -15,7 +15,7 @@ import { removeAccents } from "@/utils/contactUtils";
 const SearchPage: React.FC = () => {
   const { contacts } = useContacts();
   const { t } = useLanguage();
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>(contacts);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
@@ -31,7 +31,8 @@ const SearchPage: React.FC = () => {
         })
       );
     } else {
-      setFilteredContacts([]);
+      // Show all contacts when search is empty
+      setFilteredContacts(contacts);
     }
   }, [searchQuery, contacts]);
 
@@ -59,41 +60,46 @@ const SearchPage: React.FC = () => {
       </div>
 
       <div className="flex-1 p-4">
-        {searchQuery.trim() ? (
-          <>
-            {filteredContacts.length > 0 ? (
-              <div className="space-y-3 animate-fade-in">
-                <p className="text-sm text-muted-foreground">
-                  {filteredContacts.length} {filteredContacts.length === 1 
-                    ? t("contactFound") 
-                    : t("contactsFound")} "{searchQuery}"
-                </p>
-                <div className="space-y-3">
-                  {filteredContacts.map((contact) => (
-                    <ContactCard key={contact.id} contact={contact} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={<SearchIcon className="h-12 w-12 opacity-20" />}
-                title={t("noContactsFound")}
-                description={`${t("noContactsWithName")} "${searchQuery}" ${t("wereFound")}.`}
-                action={
-                  <Button onClick={handleAddContact} className="gap-2">
-                    <User className="h-4 w-4" />
-                    {t("addContact")}
-                  </Button>
-                }
-              />
-            )}
-          </>
-        ) : (
+        {contacts.length === 0 ? (
           <EmptyState
             icon={<User className="h-12 w-12 opacity-20" />}
-            title={t("searchForContact")}
-            description={t("typeContactName")}
+            title={t("noContacts")}
+            description={t("addYourFirstContact")}
+            action={
+              <Button onClick={handleAddContact} className="gap-2">
+                <User className="h-4 w-4" />
+                {t("addContact")}
+              </Button>
+            }
             className="mt-12"
+          />
+        ) : filteredContacts.length > 0 ? (
+          <div className="space-y-3 animate-fade-in">
+            {searchQuery.trim() && (
+              <p className="text-sm text-muted-foreground">
+                {filteredContacts.length} {filteredContacts.length === 1 
+                  ? t("contactFound") 
+                  : t("contactsFound")} 
+                {searchQuery && ` "${searchQuery}"`}
+              </p>
+            )}
+            <div className="space-y-3">
+              {filteredContacts.map((contact) => (
+                <ContactCard key={contact.id} contact={contact} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <EmptyState
+            icon={<SearchIcon className="h-12 w-12 opacity-20" />}
+            title={t("noContactsFound")}
+            description={`${t("noContactsWithName")} "${searchQuery}" ${t("wereFound")}.`}
+            action={
+              <Button onClick={handleAddContact} className="gap-2">
+                <User className="h-4 w-4" />
+                {t("addContact")}
+              </Button>
+            }
           />
         )}
       </div>
