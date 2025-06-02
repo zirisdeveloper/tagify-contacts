@@ -15,19 +15,16 @@ import { removeAccents } from "@/utils/contactUtils";
 const SearchPage: React.FC = () => {
   const { contacts } = useContacts();
   const { t } = useLanguage();
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>(contacts);
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  // Debug logging for mobile
+  // Initialize filteredContacts with all contacts on mount
   useEffect(() => {
-    console.log("SearchPage: Contacts loaded", contacts.length);
-    console.log("SearchPage: Running on mobile?", /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-    console.log("SearchPage: Capacitor available?", 'Capacitor' in window);
+    setFilteredContacts(contacts);
   }, [contacts]);
 
   useEffect(() => {
-    console.log("SearchPage: Search query changed", searchQuery);
     if (searchQuery.trim()) {
       // Search by name with accent insensitivity
       const normalizedQuery = removeAccents(searchQuery.toLowerCase());
@@ -37,17 +34,14 @@ const SearchPage: React.FC = () => {
         return normalizedName.includes(normalizedQuery);
       });
       
-      console.log("SearchPage: Filtered results", filtered.length);
       setFilteredContacts(filtered);
     } else {
       // Show all contacts when search is empty
-      console.log("SearchPage: Showing all contacts");
       setFilteredContacts(contacts);
     }
   }, [searchQuery, contacts]);
 
   const handleSearch = (query: string) => {
-    console.log("SearchPage: handleSearch called with", query);
     setSearchQuery(query);
   };
 
