@@ -19,24 +19,35 @@ const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
+  // Debug logging for mobile
   useEffect(() => {
+    console.log("SearchPage: Contacts loaded", contacts.length);
+    console.log("SearchPage: Running on mobile?", /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    console.log("SearchPage: Capacitor available?", 'Capacitor' in window);
+  }, [contacts]);
+
+  useEffect(() => {
+    console.log("SearchPage: Search query changed", searchQuery);
     if (searchQuery.trim()) {
       // Search by name with accent insensitivity
       const normalizedQuery = removeAccents(searchQuery.toLowerCase());
       
-      setFilteredContacts(
-        contacts.filter((contact) => {
-          const normalizedName = removeAccents(`${contact.name} ${contact.familyName || ""}`.toLowerCase());
-          return normalizedName.includes(normalizedQuery);
-        })
-      );
+      const filtered = contacts.filter((contact) => {
+        const normalizedName = removeAccents(`${contact.name} ${contact.familyName || ""}`.toLowerCase());
+        return normalizedName.includes(normalizedQuery);
+      });
+      
+      console.log("SearchPage: Filtered results", filtered.length);
+      setFilteredContacts(filtered);
     } else {
       // Show all contacts when search is empty
+      console.log("SearchPage: Showing all contacts");
       setFilteredContacts(contacts);
     }
   }, [searchQuery, contacts]);
 
   const handleSearch = (query: string) => {
+    console.log("SearchPage: handleSearch called with", query);
     setSearchQuery(query);
   };
 

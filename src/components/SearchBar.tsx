@@ -51,9 +51,30 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  // Debug mobile detection
   useEffect(() => {
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log("SearchBar: Running on mobile:", isMobile);
+    console.log("SearchBar: User Agent:", navigator.userAgent);
+    console.log("SearchBar: autoFocus:", autoFocus);
+  }, [autoFocus]);
+
+  useEffect(() => {
+    // Delay focus on mobile to avoid keyboard issues
     if (autoFocus && inputRef.current) {
-      inputRef.current.focus();
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Add delay for mobile devices
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            console.log("SearchBar: Focus applied (mobile)");
+          }
+        }, 300);
+      } else {
+        inputRef.current.focus();
+        console.log("SearchBar: Focus applied (desktop)");
+      }
     }
   }, [autoFocus]);
 
@@ -81,6 +102,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
+        console.log("SearchBar: Speech recognition result:", transcript);
         setQuery(transcript);
         onSearch(transcript);
         setIsListening(false);
@@ -93,8 +115,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
       };
 
       recognitionRef.current.onend = () => {
+        console.log("SearchBar: Speech recognition ended");
         setIsListening(false);
       };
+    } else {
+      console.log("SearchBar: Speech recognition not supported");
     }
 
     return () => {
@@ -110,11 +135,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    console.log("SearchBar: Input changed:", value);
     setQuery(value);
     onSearch(value);
   };
 
   const clearSearch = () => {
+    console.log("SearchBar: Clearing search");
     setQuery("");
     onSearch("");
     if (inputRef.current) {
@@ -159,13 +186,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={query}
           onChange={handleChange}
           className="pl-10 pr-10 h-12 rounded-xl bg-white shadow-sm border-0 transition-all focus-visible:ring-2 focus-visible:ring-primary"
+          // Mobile-specific attributes
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          inputMode="search"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {query && (
             <button 
               onClick={clearSearch}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
               aria-label="Clear search"
+              style={{ touchAction: 'manipulation' }}
             >
               <X className="h-4 w-4" />
             </button>
@@ -174,10 +208,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <button
               onClick={toggleListening}
               className={cn(
-                "text-muted-foreground hover:text-foreground transition-colors ml-1",
+                "text-muted-foreground hover:text-foreground transition-colors ml-1 touch-manipulation",
                 isListening && "text-primary hover:text-primary"
               )}
               aria-label={isListening ? "Stop voice search" : "Start voice search"}
+              style={{ touchAction: 'manipulation' }}
             >
               {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
