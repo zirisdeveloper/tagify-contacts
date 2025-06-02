@@ -30,7 +30,7 @@ const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) => {
             </div>
           </div>
           <AlertDialogTitle className="text-center text-xl">
-            {language === "en" ? "Backdoor" : "Piston"} v.2.1
+            {language === "en" ? "Backdoor" : "Piston"} v.2.5
           </AlertDialogTitle>
           <div className="py-4 text-center">
             {t("developedBy")} Mahfoud Bouziri
