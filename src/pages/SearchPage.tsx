@@ -19,11 +19,7 @@ const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  // Initialize filteredContacts with all contacts on mount
-  useEffect(() => {
-    setFilteredContacts(contacts);
-  }, [contacts]);
-
+  // Combined effect to handle both contacts loading and search filtering
   useEffect(() => {
     if (searchQuery.trim()) {
       // Search by name with accent insensitivity
@@ -36,7 +32,7 @@ const SearchPage: React.FC = () => {
       
       setFilteredContacts(filtered);
     } else {
-      // Show all contacts when search is empty
+      // Show all contacts when search is empty or when contacts are loaded
       setFilteredContacts(contacts);
     }
   }, [searchQuery, contacts]);
